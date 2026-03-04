@@ -11,7 +11,7 @@
 ## 檔案結構
 - `js/division.js` — 核心除法邏輯（純函式）
 - `js/app.js` — UI 渲染 + 互動 + 遊戲化（狀態機、grid 渲染、數字鍵盤、延遲提示、streak、星星）
-- `css/style.css` — 樣式（漸層背景、卡片、grid、numpad、動畫、iPad 安全區域）
+- `css/style.css` — 樣式（漸層背景、卡片、grid、numpad、動畫、iPad 安全區域、iPhone 響應式）
 - `tests/division.test.js` — 單元測試（23 tests passing）
 - `index.html` — 頁面結構
 - `.github/workflows/static.yml` — GitHub Pages 部署 workflow
@@ -26,14 +26,10 @@
 - GitHub Pages: https://huansbox.github.io/aiden-math/
 - 自動部署：push 到 main 即觸發
 
-## 進度
-- [x] Step 1: 專案初始化 + TDD 基礎建設
-- [x] Step 2: 核心除法邏輯（TDD，23 tests passing）
-- [x] Step 3: HTML 結構 + CSS Grid 佈局
-- [x] Step 4: 互動系統（狀態機 + grid 渲染 + 鍵盤互動 + 延遲提示：錯 2 次才顯示）
-- [x] Step 5: UI 視覺打磨（觸控回饋、iPad 安全區域）
-- [x] Step 6: 基本遊戲化（streak、星星、慶祝動畫）
-- [x] Step 7: GitHub Pages 部署
+## 響應式設計
+- 桌機（≥768px）：置中、hover 效果
+- iPad：clamp() 自適應尺寸，safe-area-inset-bottom
+- iPhone（≤480px）：`--cell-size: 34px`、numpad 按鈕 64px、壓縮 padding/gap，一屏可見無需滾動
 
 ## 開發指令
 - `npm test` — 執行測試
