@@ -3,8 +3,12 @@ import { generateProblem, calculateSteps, generateLayout, validateInput } from '
 const grid = document.getElementById('division-grid');
 const hintEl = document.getElementById('hint');
 const numpadBtns = document.querySelectorAll('.num-btn');
+const streakEl = document.getElementById('streak');
+const streakCountEl = streakEl.querySelector('.streak-count');
+const starsEl = document.getElementById('stars');
 
 let state = null;
+let streak = 0;
 
 function startNewProblem() {
   const { dividend, divisor } = generateProblem();
@@ -15,7 +19,7 @@ function startNewProblem() {
     .filter(c => c.fillable)
     .sort((a, b) => a.order - b.order);
 
-  state = { dividend, divisor, steps, layout, fillable, currentIndex: 0 };
+  state = { dividend, divisor, steps, layout, fillable, currentIndex: 0, errors: 0 };
 
   renderGrid();
   activateCurrent();
@@ -23,13 +27,6 @@ function startNewProblem() {
 }
 
 // Layout row → CSS grid row (inserting line rows for division-line and sep-lines)
-// Layout row 0 → grid 1 (quotient)
-//                 grid 2 (division line)
-// Layout row 1 → grid 3 (dividend)
-// Layout row 2 → grid 4 (product round 0)
-//                 grid 5 (sep line)
-// Layout row 3 → grid 6 (subtract round 0)
-// ...pattern repeats: +3 per round
 function toGridRow(layoutRow) {
   if (layoutRow === 0) return 1;
   if (layoutRow === 1) return 3;
@@ -48,7 +45,6 @@ function renderGrid() {
   grid.style.gridTemplateRows = `repeat(${totalGridRows}, auto)`;
   grid.innerHTML = '';
 
-  // Render cells
   for (const cell of layout.cells) {
     const el = document.createElement('div');
     el.className = 'cell';
@@ -67,13 +63,11 @@ function renderGrid() {
     grid.appendChild(el);
   }
 
-  // Division line (between quotient row and dividend row)
   const divLine = document.createElement('div');
   divLine.className = 'division-line';
   divLine.style.gridRow = '2';
   grid.appendChild(divLine);
 
-  // Separator lines (between product and subtract for each round)
   for (let r = 0; r < numRounds; r++) {
     const productCells = layout.cells.filter(c => c.type === 'product' && c.roundIndex === r);
     if (productCells.length === 0) continue;
@@ -123,6 +117,48 @@ function updateHint() {
   hintEl.textContent = hintMap[cell.type] || '';
 }
 
+// Star rating: 0 errors = 3★, 1-2 = 2★, 3+ = 1★
+function getStars(errors) {
+  if (errors === 0) return 3;
+  if (errors <= 2) return 3;
+  return 1;
+}
+
+function updateStreak() {
+  streakEl.hidden = streak === 0;
+  streakCountEl.textContent = streak;
+}
+
+function showStars(count) {
+  starsEl.hidden = false;
+  starsEl.textContent = '★'.repeat(count) + '☆'.repeat(3 - count);
+}
+
+function showCelebration() {
+  const overlay = document.createElement('div');
+  overlay.className = 'celebration';
+
+  const text = document.createElement('div');
+  text.className = 'celebration-text';
+  text.textContent = streak >= 3 ? '太厲害了！' : '做得好！';
+
+  overlay.appendChild(text);
+  document.body.appendChild(overlay);
+
+  setTimeout(() => overlay.remove(), 1200);
+}
+
+function onProblemComplete() {
+  const stars = getStars(state.errors);
+  streak++;
+
+  updateStreak();
+  showStars(stars);
+  showCelebration();
+
+  setTimeout(startNewProblem, 1500);
+}
+
 function handleDigit(digit) {
   if (!state || state.currentIndex >= state.fillable.length) return;
 
@@ -131,7 +167,6 @@ function handleDigit(digit) {
   if (!el) return;
 
   if (validateInput(cell, digit)) {
-    // Correct: fill and advance
     el.classList.remove('cell--fillable', 'cell--active');
     el.classList.add('cell--filled');
     el.textContent = cell.value;
@@ -140,12 +175,14 @@ function handleDigit(digit) {
     activateCurrent();
     updateHint();
 
-    // All done → auto next problem
     if (state.currentIndex >= state.fillable.length) {
-      setTimeout(startNewProblem, 1500);
+      onProblemComplete();
     }
   } else {
-    // Wrong: shake
+    state.errors++;
+    if (state.errors >= 3) streak = 0; // reset streak on too many errors
+    updateStreak();
+
     el.classList.add('cell--error');
     el.addEventListener('animationend', () => el.classList.remove('cell--error'), { once: true });
   }
