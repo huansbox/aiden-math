@@ -1,0 +1,14 @@
+{
+  "name": "aiden-math",
+  "version": "1.0.0",
+  "description": "長除法練習網站 — 國小三年級 iPad 友善互動練習",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "dev": "npx serve ."
+  },
+  "devDependencies": {
+    "vitest": "^3.0.0"
+  }
+}
