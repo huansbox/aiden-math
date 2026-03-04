@@ -19,7 +19,7 @@ function startNewProblem() {
     .filter(c => c.fillable)
     .sort((a, b) => a.order - b.order);
 
-  state = { dividend, divisor, steps, layout, fillable, currentIndex: 0, errors: 0 };
+  state = { dividend, divisor, steps, layout, fillable, currentIndex: 0, errors: 0, cellErrors: 0 };
 
   renderGrid();
   activateCurrent();
@@ -107,6 +107,12 @@ function updateHint() {
   const roundIdx = cell.type === 'quotient' ? cell.col - 1 : cell.roundIndex;
   const round = steps.rounds[roundIdx];
 
+  // Show hint only after 2 wrong attempts on current cell
+  if (state.cellErrors < 2) {
+    hintEl.textContent = '填入正確的數字';
+    return;
+  }
+
   const hintMap = {
     quotient:  `${round.currentNumber} ÷ ${divisor} = ?`,
     product:   `${divisor} × ${round.quotientDigit} = ?`,
@@ -172,6 +178,7 @@ function handleDigit(digit) {
     el.textContent = cell.value;
 
     state.currentIndex++;
+    state.cellErrors = 0;
     activateCurrent();
     updateHint();
 
@@ -180,8 +187,10 @@ function handleDigit(digit) {
     }
   } else {
     state.errors++;
-    if (state.errors >= 3) streak = 0; // reset streak on too many errors
+    state.cellErrors++;
+    if (state.errors >= 3) streak = 0;
     updateStreak();
+    updateHint();
 
     el.classList.add('cell--error');
     el.addEventListener('animationend', () => el.classList.remove('cell--error'), { once: true });
