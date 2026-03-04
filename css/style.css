@@ -1,1 +1,272 @@
-/* placeholder */
+/* === Reset & Base === */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
+body {
+  font-family: "Noto Sans TC", "PingFang TC", sans-serif;
+  min-height: 100dvh;
+  background: linear-gradient(160deg, #0b3b2e 0%, #1a6b4a 40%, #2a8a6d 100%);
+  display: flex;
+  justify-content: center;
+  padding: clamp(12px, 3vw, 24px);
+}
+
+/* === Layout Container === */
+.container {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(12px, 2.5vw, 20px);
+}
+
+/* === Header === */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4px;
+}
+
+.title {
+  font-size: clamp(1.4rem, 5vw, 2rem);
+  font-weight: 900;
+  color: #e8f5e9;
+  letter-spacing: 0.05em;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.stats {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  font-size: clamp(1rem, 3.5vw, 1.3rem);
+  color: #ffd34d;
+  font-weight: 700;
+}
+
+/* === Card === */
+.card {
+  background: #f6f2e8;
+  border-radius: 24px;
+  padding: clamp(20px, 5vw, 40px);
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.15),
+    0 1px 3px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(16px, 4vw, 28px);
+}
+
+/* === Division Grid === */
+.division-grid {
+  display: grid;
+  gap: 2px;
+  justify-content: center;
+  font-size: clamp(1.6rem, 6vw, 2.4rem);
+  font-weight: 700;
+  line-height: 1;
+  color: #1a1a1a;
+}
+
+.cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(40px, 10vw, 56px);
+  height: clamp(40px, 10vw, 56px);
+  border-radius: 8px;
+  position: relative;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+/* Static cells (dividend, divisor) */
+.cell--static {
+  color: #2e4a3e;
+}
+
+/* Fillable cell: empty state */
+.cell--fillable {
+  background: #e8e0d0;
+  border: 2px dashed #c4b89a;
+  color: transparent;
+}
+
+/* Active cell: awaiting input */
+.cell--active {
+  background: #fff8e1;
+  border: 3px solid #ffd34d;
+  box-shadow: 0 0 0 4px rgba(255, 211, 77, 0.3), 0 0 16px rgba(255, 211, 77, 0.2);
+  animation: pulse-glow 1.5s ease-in-out infinite;
+}
+
+/* Filled correctly */
+.cell--filled {
+  background: #c8e6c9;
+  border: 2px solid #66bb6a;
+  color: #1b5e20;
+  animation: pop-in 0.25s ease-out;
+}
+
+/* Error shake */
+.cell--error {
+  animation: shake 0.4s ease-in-out;
+  border-color: #e53935;
+  background: #ffcdd2;
+}
+
+/* Divisor bracket: right border as the vertical line */
+.cell--divisor {
+  border-right: 3px solid #2e4a3e;
+  padding-right: 6px;
+}
+
+/* Horizontal line below dividend row */
+.division-line {
+  grid-column: 2 / -1;
+  height: 3px;
+  background: #2e4a3e;
+  border-radius: 2px;
+  align-self: start;
+}
+
+/* Separator lines between rounds */
+.sep-line {
+  height: 2px;
+  background: #2e4a3e;
+  border-radius: 1px;
+  align-self: center;
+}
+
+/* === Hint Text === */
+.hint {
+  font-size: clamp(1rem, 3.5vw, 1.3rem);
+  color: #5d4e37;
+  font-weight: 700;
+  text-align: center;
+  min-height: 1.6em;
+  transition: opacity 0.2s;
+}
+
+/* === Number Pad === */
+.numpad {
+  display: flex;
+  justify-content: center;
+}
+
+.numpad-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(8px, 2vw, 12px);
+  width: 100%;
+  max-width: 360px;
+}
+
+.num-btn {
+  appearance: none;
+  border: none;
+  background: #f6f2e8;
+  color: #2e4a3e;
+  font-family: inherit;
+  font-size: clamp(1.4rem, 5vw, 2rem);
+  font-weight: 900;
+  width: 100%;
+  aspect-ratio: 1;
+  max-width: 100px;
+  max-height: 100px;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow:
+    0 3px 8px rgba(0, 0, 0, 0.15),
+    0 1px 2px rgba(0, 0, 0, 0.1);
+  transition: transform 0.1s, box-shadow 0.1s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.num-btn:active {
+  transform: scale(0.92);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.num-btn--zero {
+  grid-column: 2;
+}
+
+/* === Animations === */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(255, 211, 77, 0.3), 0 0 16px rgba(255, 211, 77, 0.2); }
+  50% { box-shadow: 0 0 0 6px rgba(255, 211, 77, 0.5), 0 0 24px rgba(255, 211, 77, 0.35); }
+}
+
+@keyframes pop-in {
+  0% { transform: scale(0.8); opacity: 0.5; }
+  60% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  15% { transform: translateX(-6px); }
+  30% { transform: translateX(6px); }
+  45% { transform: translateX(-4px); }
+  60% { transform: translateX(4px); }
+  75% { transform: translateX(-2px); }
+  90% { transform: translateX(2px); }
+}
+
+/* === Responsive === */
+@media (min-width: 768px) {
+  body {
+    align-items: center;
+  }
+
+  .container {
+    max-width: 640px;
+  }
+
+  .num-btn:hover {
+    background: #e8e0d0;
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+
+  .num-btn:active {
+    transform: scale(0.95);
+  }
+}
+
+/* === Celebration overlay === */
+.celebration {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  pointer-events: none;
+}
+
+.celebration-text {
+  font-size: clamp(3rem, 12vw, 5rem);
+  font-weight: 900;
+  color: #ffd34d;
+  text-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  animation: celebrate-pop 0.6s ease-out;
+}
+
+@keyframes celebrate-pop {
+  0% { transform: scale(0); opacity: 0; }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); opacity: 1; }
+}
