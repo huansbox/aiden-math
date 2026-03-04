@@ -15,10 +15,12 @@ html {
 body {
   font-family: "Noto Sans TC", "PingFang TC", sans-serif;
   min-height: 100dvh;
+  min-height: -webkit-fill-available;
   background: linear-gradient(160deg, #0b3b2e 0%, #1a6b4a 40%, #2a8a6d 100%);
   display: flex;
   justify-content: center;
   padding: clamp(12px, 3vw, 24px);
+  padding-bottom: calc(clamp(12px, 3vw, 24px) + env(safe-area-inset-bottom, 0px));
 }
 
 /* === Layout Container === */
@@ -72,7 +74,7 @@ body {
 /* === Division Grid === */
 .division-grid {
   display: grid;
-  gap: 2px;
+  gap: 3px 2px;
   justify-content: center;
   font-size: clamp(1.6rem, 6vw, 2.4rem);
   font-weight: 700;
@@ -88,7 +90,7 @@ body {
   height: clamp(40px, 10vw, 56px);
   border-radius: 8px;
   position: relative;
-  transition: background 0.2s, box-shadow 0.2s;
+  transition: background 0.2s, box-shadow 0.2s, border-color 0.2s;
 }
 
 /* Static cells (dividend, divisor) */
@@ -188,15 +190,17 @@ body {
   border-radius: 50%;
   cursor: pointer;
   box-shadow:
-    0 3px 8px rgba(0, 0, 0, 0.15),
-    0 1px 2px rgba(0, 0, 0, 0.1);
-  transition: transform 0.1s, box-shadow 0.1s;
+    0 4px 10px rgba(0, 0, 0, 0.18),
+    0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: transform 0.12s ease-out, box-shadow 0.12s ease-out, background 0.12s;
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .num-btn:active {
-  transform: scale(0.92);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  transform: scale(0.88);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  background: #e0d8c8;
 }
 
 .num-btn--zero {
