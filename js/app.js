@@ -21,6 +21,7 @@ function startNewProblem() {
 
   state = { dividend, divisor, steps, layout, fillable, currentIndex: 0, errors: 0, cellErrors: 0 };
 
+  starsEl.hidden = true;
   renderGrid();
   activateCurrent();
   updateHint();
@@ -126,7 +127,7 @@ function updateHint() {
 // Star rating: 0 errors = 3★, 1-2 = 2★, 3+ = 1★
 function getStars(errors) {
   if (errors === 0) return 3;
-  if (errors <= 2) return 3;
+  if (errors <= 2) return 2;
   return 1;
 }
 
