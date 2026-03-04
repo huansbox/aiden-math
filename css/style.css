@@ -1,3 +1,8 @@
+/* === CSS Variables === */
+:root {
+  --cell-size: clamp(40px, 10vw, 56px);
+}
+
 /* === Reset & Base === */
 *, *::before, *::after {
   box-sizing: border-box;
@@ -86,8 +91,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: clamp(40px, 10vw, 56px);
-  height: clamp(40px, 10vw, 56px);
+  width: var(--cell-size);
+  height: var(--cell-size);
   border-radius: 8px;
   position: relative;
   transition: background 0.2s, box-shadow 0.2s, border-color 0.2s;
@@ -247,6 +252,53 @@ body {
 
   .num-btn:active {
     transform: scale(0.95);
+  }
+}
+
+/* === Mobile (iPhone) === */
+@media (max-width: 480px) {
+  :root {
+    --cell-size: 34px;
+  }
+
+  body {
+    padding: 8px;
+    padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .container {
+    gap: 8px;
+  }
+
+  .title {
+    font-size: 1.2rem;
+  }
+
+  .card {
+    padding: 14px;
+    gap: 10px;
+    border-radius: 16px;
+  }
+
+  .division-grid {
+    font-size: 1.3rem;
+    gap: 2px 1px;
+  }
+
+  .hint {
+    font-size: 0.9rem;
+    min-height: 1.2em;
+  }
+
+  .num-btn {
+    max-width: 64px;
+    max-height: 64px;
+    font-size: 1.2rem;
+  }
+
+  .numpad-grid {
+    gap: 6px;
+    max-width: 240px;
   }
 }
 

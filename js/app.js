@@ -42,7 +42,7 @@ function renderGrid() {
   const numRounds = steps.rounds.length;
   const totalGridRows = 3 + numRounds * 3;
 
-  grid.style.gridTemplateColumns = 'repeat(4, clamp(40px, 10vw, 56px))';
+  grid.style.gridTemplateColumns = 'repeat(4, var(--cell-size))';
   grid.style.gridTemplateRows = `repeat(${totalGridRows}, auto)`;
   grid.innerHTML = '';
 
