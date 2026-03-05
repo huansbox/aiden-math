@@ -28,6 +28,18 @@ function startNewProblem() {
   state = { dividend, divisor, steps, layout, fillable, currentIndex: 0, errors: 0, cellErrors: 0 };
 
   starsEl.hidden = true;
+
+  // Adjust cell size for larger grids
+  const digitCount = String(dividend).length;
+  const bossCellSizes = { 4: '48px', 5: '44px', 6: '40px' };
+  document.documentElement.style.setProperty(
+    '--cell-size',
+    bossCellSizes[digitCount] || ''
+  );
+  if (!bossCellSizes[digitCount]) {
+    document.documentElement.style.removeProperty('--cell-size');
+  }
+
   renderGrid();
   activateCurrent();
   updateHint();
@@ -51,7 +63,8 @@ function renderGrid() {
   const numRounds = steps.rounds.length;
   const totalGridRows = 3 + numRounds * 3;
 
-  grid.style.gridTemplateColumns = 'repeat(4, var(--cell-size))';
+  const numCols = String(state.dividend).length + 1;
+  grid.style.gridTemplateColumns = `repeat(${numCols}, var(--cell-size))`;
   grid.style.gridTemplateRows = `repeat(${totalGridRows}, auto)`;
   grid.innerHTML = '';
 
