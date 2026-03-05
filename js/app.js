@@ -1,6 +1,7 @@
 import { generateProblem, calculateSteps, generateLayout, validateInput } from './division.js';
 import { resumeAudio, playCorrect, playError, playComplete } from './sound.js';
 import { loadProgress, saveResult, isDaily, getDailySummary, DAILY_GOAL } from './daily.js';
+import { launchFireworks } from './fireworks.js';
 
 const grid = document.getElementById('division-grid');
 const hintEl = document.getElementById('hint');
@@ -171,24 +172,32 @@ function updateProgress() {
 
 function showDailyComplete() {
   const summary = getDailySummary(progress);
+
   const overlay = document.createElement('div');
-  overlay.className = 'celebration';
+  overlay.className = 'fireworks-overlay';
+
+  const canvas = document.createElement('canvas');
+  canvas.className = 'fireworks-canvas';
+  overlay.appendChild(canvas);
 
   const content = document.createElement('div');
-  content.className = 'daily-complete';
+  content.className = 'fireworks-content';
   content.innerHTML = `
-    <div class="daily-complete__title">今日練習完成！</div>
-    <div class="daily-complete__stars">⭐ × ${summary.totalStars}</div>
-    <div class="daily-complete__sub">繼續進入自由練習</div>
+    <img class="fireworks-img" src="assets/great-job.png" alt="你好棒" onerror="this.style.display='none'">
+    <div class="fireworks-title">今日練習完成！</div>
+    <div class="fireworks-stars">⭐ × ${summary.totalStars}</div>
   `;
-
   overlay.appendChild(content);
+
   document.body.appendChild(overlay);
 
+  const cleanup = launchFireworks(canvas, 4000);
+
   setTimeout(() => {
+    cleanup();
     overlay.remove();
     startNewProblem();
-  }, 3000);
+  }, 5000);
 }
 
 function onProblemComplete() {

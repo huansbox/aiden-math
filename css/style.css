@@ -94,6 +94,58 @@ body {
   margin-top: 12px;
 }
 
+/* === Fireworks overlay === */
+.fireworks-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fireworks-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.fireworks-content {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  animation: celebrate-pop 0.6s ease-out;
+}
+
+.fireworks-img {
+  width: clamp(120px, 30vw, 200px);
+  height: auto;
+  margin-bottom: 16px;
+  filter: drop-shadow(0 4px 16px rgba(255, 211, 77, 0.5));
+  animation: float-bounce 2s ease-in-out infinite;
+}
+
+.fireworks-title {
+  font-size: clamp(2rem, 8vw, 3.5rem);
+  font-weight: 900;
+  color: #ffd34d;
+  text-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  margin-bottom: 12px;
+}
+
+.fireworks-stars {
+  font-size: clamp(1.3rem, 5vw, 2rem);
+  color: #fff;
+  font-weight: 700;
+}
+
+@keyframes float-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
 /* === Card === */
 .card {
   background: #f6f2e8;
