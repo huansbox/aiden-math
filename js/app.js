@@ -1,5 +1,6 @@
 import { generateProblem, calculateSteps, generateLayout, validateInput } from './division.js';
 import { resumeAudio, playCorrect, playError, playComplete } from './sound.js';
+import { loadProgress, saveResult, isDaily, getDailySummary, DAILY_GOAL } from './daily.js';
 
 const grid = document.getElementById('division-grid');
 const hintEl = document.getElementById('hint');
@@ -10,6 +11,7 @@ const starsEl = document.getElementById('stars');
 
 let state = null;
 let streak = 0;
+let progress = loadProgress(localStorage, new Date().toISOString().slice(0, 10));
 
 function startNewProblem() {
   const { dividend, divisor } = generateProblem();
@@ -26,6 +28,7 @@ function startNewProblem() {
   renderGrid();
   activateCurrent();
   updateHint();
+  updateProgress();
 }
 
 // Layout row → CSS grid row (inserting line rows for division-line and sep-lines)
@@ -156,16 +159,55 @@ function showCelebration() {
   setTimeout(() => overlay.remove(), 1200);
 }
 
+function updateProgress() {
+  const progressEl = document.getElementById('progress');
+  if (!progressEl) return;
+  if (isDaily(progress)) {
+    progressEl.textContent = `第 ${progress.dailyCompleted}/${DAILY_GOAL} 題`;
+  } else {
+    progressEl.textContent = '自由練習';
+  }
+}
+
+function showDailyComplete() {
+  const summary = getDailySummary(progress);
+  const overlay = document.createElement('div');
+  overlay.className = 'celebration';
+
+  const content = document.createElement('div');
+  content.className = 'daily-complete';
+  content.innerHTML = `
+    <div class="daily-complete__title">今日練習完成！</div>
+    <div class="daily-complete__stars">⭐ × ${summary.totalStars}</div>
+    <div class="daily-complete__sub">繼續進入自由練習</div>
+  `;
+
+  overlay.appendChild(content);
+  document.body.appendChild(overlay);
+
+  setTimeout(() => {
+    overlay.remove();
+    startNewProblem();
+  }, 3000);
+}
+
 function onProblemComplete() {
   playComplete();
   const stars = getStars(state.errors);
   streak++;
 
+  progress = saveResult(localStorage, progress, { stars, errors: state.errors });
+
   updateStreak();
   showStars(stars);
-  showCelebration();
+  updateProgress();
 
-  setTimeout(startNewProblem, 1500);
+  if (progress.dailyCompleted === DAILY_GOAL) {
+    showDailyComplete();
+  } else {
+    showCelebration();
+    setTimeout(startNewProblem, 1500);
+  }
 }
 
 function handleDigit(digit) {
