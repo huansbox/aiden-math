@@ -10,7 +10,7 @@
 
 ## 檔案結構
 - `js/division.js` — 核心除法邏輯（純函式）
-- `js/app.js` — UI 渲染 + 互動 + 遊戲化（狀態機、grid 渲染、數字鍵盤、延遲提示、streak、星星）
+- `js/app.js` — UI 渲染 + 互動 + 遊戲化（狀態機、grid 渲染、數字鍵盤、延遲提示、streak、星星、累計星星）
 - `js/sound.js` — 音效回饋（Web Audio API 合成：答對/答錯/完成琶音）
 - `js/daily.js` — 每日練習模式（localStorage 進度追蹤、每日 5 題 + 自由練習）
 - `js/fireworks.js` — Canvas 煙火粒子特效（每日完成慶祝）
