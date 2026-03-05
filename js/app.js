@@ -9,6 +9,7 @@ const numpadBtns = document.querySelectorAll('.num-btn');
 const streakEl = document.getElementById('streak');
 const streakCountEl = streakEl.querySelector('.streak-count');
 const starsEl = document.getElementById('stars');
+const totalStarsEl = document.getElementById('total-stars');
 
 let state = null;
 let streak = 0;
@@ -30,6 +31,7 @@ function startNewProblem() {
   activateCurrent();
   updateHint();
   updateProgress();
+  updateTotalStars();
 }
 
 // Layout row → CSS grid row (inserting line rows for division-line and sep-lines)
@@ -146,18 +148,27 @@ function showStars(count) {
   starsEl.textContent = '★'.repeat(count) + '☆'.repeat(3 - count);
 }
 
-function showCelebration() {
+function showCelebration(stars) {
   const overlay = document.createElement('div');
   overlay.className = 'celebration';
 
-  const text = document.createElement('div');
-  text.className = 'celebration-text';
-  text.textContent = streak >= 3 ? '太厲害了！' : '做得好！';
+  const content = document.createElement('div');
+  content.className = 'celebration-content';
 
-  overlay.appendChild(text);
+  const starsText = document.createElement('div');
+  starsText.className = 'celebration-stars';
+  starsText.textContent = '★'.repeat(stars) + '☆'.repeat(3 - stars);
+
+  const msg = document.createElement('div');
+  msg.className = 'celebration-text';
+  msg.textContent = streak >= 3 ? '太厲害了！' : '做得好！';
+
+  content.appendChild(starsText);
+  content.appendChild(msg);
+  overlay.appendChild(content);
   document.body.appendChild(overlay);
 
-  setTimeout(() => overlay.remove(), 1200);
+  setTimeout(() => overlay.remove(), 2500);
 }
 
 function updateProgress() {
@@ -168,6 +179,10 @@ function updateProgress() {
   } else {
     progressEl.textContent = '自由練習';
   }
+}
+
+function updateTotalStars() {
+  totalStarsEl.textContent = `⭐ ${progress.totalStars}`;
 }
 
 const CELEBRATION_IMAGES = Array.from({ length: 10 }, (_, i) =>
@@ -216,14 +231,14 @@ function onProblemComplete() {
   progress = saveResult(localStorage, progress, { stars, errors: state.errors });
 
   updateStreak();
-  showStars(stars);
+  updateTotalStars();
   updateProgress();
 
   if (progress.dailyCompleted === DAILY_GOAL) {
     showDailyComplete();
   } else {
-    showCelebration();
-    setTimeout(startNewProblem, 1500);
+    showCelebration(stars);
+    setTimeout(startNewProblem, 3000);
   }
 }
 
