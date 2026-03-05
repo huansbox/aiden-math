@@ -11,10 +11,21 @@ const streakCountEl = streakEl.querySelector('.streak-count');
 const starsEl = document.getElementById('stars');
 const totalStarsEl = document.getElementById('total-stars');
 const badgeEl = document.getElementById('badge');
+const bossLivesEl = document.getElementById('boss-lives');
+const bossEntryEl = document.getElementById('boss-entry');
+const bossBtnEl = document.getElementById('boss-btn');
 
 let state = null;
 let streak = 0;
 let progress = loadProgress(localStorage, new Date().toISOString().slice(0, 10));
+
+// Boss challenge state
+const BOSS_STAGES = [
+  { digitCount: 4, divisorMin: 7, reward: 2 },
+  { digitCount: 5, divisorMin: 7, reward: 3 },
+  { digitCount: 6, divisorMin: 7, reward: 5 },
+];
+let bossMode = null; // null | { stage, lives, totalErrors, starsEarned }
 
 function startNewProblem() {
   const { dividend, divisor } = generateProblem();
@@ -46,6 +57,9 @@ function startNewProblem() {
   updateProgress();
   updateTotalStars();
   updateBadge();
+  if (!isDaily(progress) && !bossMode) {
+    bossEntryEl.hidden = false;
+  }
 }
 
 // Layout row → CSS grid row (inserting line rows for division-line and sep-lines)
@@ -241,6 +255,190 @@ function updateBadge() {
   }
 }
 
+function startBossMode() {
+  bossMode = { stage: 0, lives: 3, totalErrors: 0, starsEarned: 0 };
+  bossEntryEl.hidden = true;
+  updateBossUI();
+  startBossStageProblem();
+}
+
+function startBossStageProblem() {
+  const stageConfig = BOSS_STAGES[bossMode.stage];
+  const { dividend, divisor } = generateProblem(stageConfig.digitCount, stageConfig.divisorMin);
+  const steps = calculateSteps(dividend, divisor);
+  const layout = generateLayout(steps, dividend, divisor);
+
+  const fillable = layout.cells
+    .filter(c => c.fillable)
+    .sort((a, b) => a.order - b.order);
+
+  state = { dividend, divisor, steps, layout, fillable, currentIndex: 0, errors: 0, cellErrors: 0 };
+
+  starsEl.hidden = true;
+
+  // Adjust cell size for boss grids
+  const digitCount = String(dividend).length;
+  const bossCellSizes = { 4: '48px', 5: '44px', 6: '40px' };
+  document.documentElement.style.setProperty(
+    '--cell-size',
+    bossCellSizes[digitCount] || ''
+  );
+
+  renderGrid();
+  activateCurrent();
+  hintEl.textContent = '填入正確的數字';
+  updateBossUI();
+}
+
+function updateBossUI() {
+  if (!bossMode) {
+    bossLivesEl.hidden = true;
+    streakEl.hidden = streak === 0;
+    return;
+  }
+
+  streakEl.hidden = true;
+  starsEl.hidden = true;
+  bossLivesEl.hidden = false;
+
+  const hearts = '❤️'.repeat(bossMode.lives) + '🖤'.repeat(3 - bossMode.lives);
+  bossLivesEl.textContent = hearts;
+
+  const progressEl = document.getElementById('progress');
+  progressEl.textContent = `第${bossMode.stage + 1}關 ${BOSS_STAGES[bossMode.stage].digitCount}位÷1位`;
+}
+
+function onBossError() {
+  bossMode.lives--;
+  bossMode.totalErrors++;
+  updateBossUI();
+
+  if (bossMode.lives <= 0) {
+    setTimeout(() => showBossDefeat(), 500);
+  }
+}
+
+function onBossProblemComplete() {
+  const stageConfig = BOSS_STAGES[bossMode.stage];
+  bossMode.starsEarned += stageConfig.reward;
+
+  // Save stars to progress
+  progress.totalStars += stageConfig.reward;
+  localStorage.setItem('aiden-math-progress', JSON.stringify(progress));
+  updateTotalStars();
+
+  if (bossMode.stage < BOSS_STAGES.length - 1) {
+    showBossStageClear(bossMode.stage, stageConfig.reward);
+    bossMode.stage++;
+    setTimeout(() => {
+      startBossStageProblem();
+    }, 2500);
+  } else {
+    const perfectBonus = bossMode.totalErrors === 0 ? 5 : 0;
+    if (perfectBonus > 0) {
+      bossMode.starsEarned += perfectBonus;
+      progress.totalStars += perfectBonus;
+      localStorage.setItem('aiden-math-progress', JSON.stringify(progress));
+      updateTotalStars();
+    }
+    setTimeout(() => showBossVictory(bossMode.starsEarned, perfectBonus), 500);
+  }
+}
+
+function showBossStageClear(stageIndex, reward) {
+  const overlay = document.createElement('div');
+  overlay.className = 'celebration';
+
+  const content = document.createElement('div');
+  content.className = 'celebration-content';
+
+  const title = document.createElement('div');
+  title.className = 'celebration-stars';
+  title.textContent = `第${stageIndex + 1}關 通過！`;
+
+  const sub = document.createElement('div');
+  sub.className = 'celebration-text';
+  sub.textContent = `+${reward}⭐`;
+
+  content.appendChild(title);
+  content.appendChild(sub);
+  overlay.appendChild(content);
+  document.body.appendChild(overlay);
+
+  setTimeout(() => overlay.remove(), 2000);
+}
+
+function showBossVictory(totalStars, perfectBonus) {
+  const overlay = document.createElement('div');
+  overlay.className = 'fireworks-overlay';
+
+  const canvas = document.createElement('canvas');
+  canvas.className = 'fireworks-canvas';
+  overlay.appendChild(canvas);
+
+  const content = document.createElement('div');
+  content.className = 'fireworks-content';
+  content.innerHTML = `
+    <div class="fireworks-title">🏆 魔王挑戰通關！</div>
+    <div class="fireworks-stars">⭐ × ${totalStars}</div>
+    ${perfectBonus > 0 ? `<div class="boss-perfect">零失誤 +${perfectBonus}⭐</div>` : ''}
+  `;
+  overlay.appendChild(content);
+  document.body.appendChild(overlay);
+
+  const cleanup = launchFireworks(canvas, 4000);
+
+  setTimeout(() => {
+    cleanup();
+    overlay.remove();
+    exitBossMode();
+  }, 5000);
+}
+
+function showBossDefeat() {
+  const overlay = document.createElement('div');
+  overlay.className = 'celebration';
+
+  const content = document.createElement('div');
+  content.className = 'milestone-content';
+
+  const emoji = document.createElement('div');
+  emoji.className = 'milestone-emoji';
+  emoji.textContent = '💪';
+
+  const title = document.createElement('div');
+  title.className = 'milestone-title';
+  const stageReached = bossMode.stage + 1;
+  title.textContent = stageReached >= 2 ? `挑戰到第${stageReached}關！` : '下次再挑戰！';
+
+  const sub = document.createElement('div');
+  sub.className = 'milestone-sub';
+  sub.textContent = bossMode.starsEarned > 0
+    ? `獲得 ${bossMode.starsEarned}⭐`
+    : '再試一次吧！';
+
+  content.appendChild(emoji);
+  content.appendChild(title);
+  content.appendChild(sub);
+  overlay.appendChild(content);
+  document.body.appendChild(overlay);
+
+  setTimeout(() => {
+    overlay.remove();
+    exitBossMode();
+  }, 3000);
+}
+
+function exitBossMode() {
+  bossMode = null;
+  document.documentElement.style.removeProperty('--cell-size');
+  updateBossUI();
+  startNewProblem();
+  if (!isDaily(progress)) {
+    bossEntryEl.hidden = false;
+  }
+}
+
 const CELEBRATION_IMAGES = Array.from({ length: 10 }, (_, i) =>
   `assets/great-job-${String(i + 1).padStart(2, '0')}.webp`
 );
@@ -276,11 +474,18 @@ function showDailyComplete() {
     cleanup();
     overlay.remove();
     startNewProblem();
+    bossEntryEl.hidden = false;
   }, 5000);
 }
 
 function onProblemComplete() {
   playComplete();
+
+  if (bossMode) {
+    onBossProblemComplete();
+    return;
+  }
+
   const stars = getStars(state.errors);
   streak++;
 
@@ -330,12 +535,17 @@ function handleDigit(digit) {
     playError();
     state.errors++;
     state.cellErrors++;
-    if (state.errors >= 3) streak = 0;
-    updateStreak();
-    updateHint();
 
     el.classList.add('cell--error');
     el.addEventListener('animationend', () => el.classList.remove('cell--error'), { once: true });
+
+    if (bossMode) {
+      onBossError();
+    } else {
+      if (state.errors >= 3) streak = 0;
+      updateStreak();
+      updateHint();
+    }
   }
 }
 
@@ -350,6 +560,17 @@ numpadBtns.forEach(btn => {
 // Keyboard input
 document.addEventListener('keydown', (e) => {
   if (e.key >= '0' && e.key <= '9') handleDigit(Number(e.key));
+});
+
+// Show boss entry if daily already complete
+if (!isDaily(progress)) {
+  bossEntryEl.hidden = false;
+}
+
+// Boss button click handler
+bossBtnEl.addEventListener('click', () => {
+  resumeAudio();
+  startBossMode();
 });
 
 startNewProblem();
