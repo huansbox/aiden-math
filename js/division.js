@@ -2,9 +2,11 @@
  * 長除法核心邏輯 — 純函式，無 DOM 依賴
  */
 
-export function generateProblem() {
-  const divisor = Math.floor(Math.random() * 8) + 2; // 2-9
-  const dividend = Math.floor(Math.random() * 900) + 100; // 100-999
+export function generateProblem(digitCount = 3, divisorMin = 2) {
+  const divisor = Math.floor(Math.random() * (10 - divisorMin)) + divisorMin; // divisorMin-9
+  const min = Math.pow(10, digitCount - 1);     // e.g. 1000 for 4-digit
+  const max = Math.pow(10, digitCount) - 1;     // e.g. 9999 for 4-digit
+  const dividend = Math.floor(Math.random() * (max - min + 1)) + min;
   return { dividend, divisor };
 }
 

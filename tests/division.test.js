@@ -28,6 +28,46 @@ describe('generateProblem', () => {
     expect(problem).toHaveProperty('dividend');
     expect(problem).toHaveProperty('divisor');
   });
+
+  it('should generate 4-digit dividend when digitCount=4', () => {
+    for (let i = 0; i < 50; i++) {
+      const { dividend } = generateProblem(4);
+      expect(dividend).toBeGreaterThanOrEqual(1000);
+      expect(dividend).toBeLessThanOrEqual(9999);
+    }
+  });
+
+  it('should generate 5-digit dividend when digitCount=5', () => {
+    for (let i = 0; i < 50; i++) {
+      const { dividend } = generateProblem(5);
+      expect(dividend).toBeGreaterThanOrEqual(10000);
+      expect(dividend).toBeLessThanOrEqual(99999);
+    }
+  });
+
+  it('should generate 6-digit dividend when digitCount=6', () => {
+    for (let i = 0; i < 50; i++) {
+      const { dividend } = generateProblem(6);
+      expect(dividend).toBeGreaterThanOrEqual(100000);
+      expect(dividend).toBeLessThanOrEqual(999999);
+    }
+  });
+
+  it('should default to 3-digit when no argument', () => {
+    for (let i = 0; i < 50; i++) {
+      const { dividend } = generateProblem();
+      expect(dividend).toBeGreaterThanOrEqual(100);
+      expect(dividend).toBeLessThanOrEqual(999);
+    }
+  });
+
+  it('should accept optional divisorMin for harder divisors', () => {
+    for (let i = 0; i < 50; i++) {
+      const { divisor } = generateProblem(4, 7);
+      expect(divisor).toBeGreaterThanOrEqual(7);
+      expect(divisor).toBeLessThanOrEqual(9);
+    }
+  });
 });
 
 describe('calculateSteps', () => {
@@ -129,6 +169,20 @@ describe('calculateSteps', () => {
     expect(result.rounds).toHaveLength(3);
     expect(result.quotient).toBe(40);
     expect(result.remainder).toBe(0);
+  });
+
+  it('handles 4-digit division (4928 ÷ 7)', () => {
+    const result = calculateSteps(4928, 7);
+    expect(result.quotient).toBe(704);
+    expect(result.remainder).toBe(0);
+    expect(result.rounds).toHaveLength(4);
+  });
+
+  it('handles 6-digit division (297456 ÷ 8)', () => {
+    const result = calculateSteps(297456, 8);
+    expect(result.quotient).toBe(37182);
+    expect(result.remainder).toBe(0);
+    expect(result.rounds).toHaveLength(6);
   });
 });
 
