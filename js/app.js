@@ -1,4 +1,5 @@
 import { generateProblem, calculateSteps, generateLayout, validateInput } from './division.js';
+import { resumeAudio, playCorrect, playError, playComplete } from './sound.js';
 
 const grid = document.getElementById('division-grid');
 const hintEl = document.getElementById('hint');
@@ -156,6 +157,7 @@ function showCelebration() {
 }
 
 function onProblemComplete() {
+  playComplete();
   const stars = getStars(state.errors);
   streak++;
 
@@ -174,6 +176,7 @@ function handleDigit(digit) {
   if (!el) return;
 
   if (validateInput(cell, digit)) {
+    playCorrect();
     el.classList.remove('cell--fillable', 'cell--active');
     el.classList.add('cell--filled');
     el.textContent = cell.value;
@@ -187,6 +190,7 @@ function handleDigit(digit) {
       onProblemComplete();
     }
   } else {
+    playError();
     state.errors++;
     state.cellErrors++;
     if (state.errors >= 3) streak = 0;
@@ -200,7 +204,10 @@ function handleDigit(digit) {
 
 // Number pad clicks
 numpadBtns.forEach(btn => {
-  btn.addEventListener('click', () => handleDigit(Number(btn.dataset.digit)));
+  btn.addEventListener('click', () => {
+    resumeAudio();
+    handleDigit(Number(btn.dataset.digit));
+  });
 });
 
 // Keyboard input
