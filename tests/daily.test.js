@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { loadProgress, saveResult, isDaily, getDailySummary, DAILY_GOAL } from '../js/daily.js';
+import { loadProgress, saveResult, isDaily, getDailySummary, DAILY_GOAL, getMilestone, getMilestoneBadge } from '../js/daily.js';
 
 // Mock localStorage
 const store = {};
@@ -80,5 +80,75 @@ describe('getDailySummary', () => {
     const summary = getDailySummary(p);
     expect(summary.totalStars).toBe(12);
     expect(summary.problemCount).toBe(5);
+  });
+});
+
+describe('getMilestone', () => {
+  it('returns null when no milestone is crossed', () => {
+    expect(getMilestone(3, 4)).toBeNull();
+  });
+
+  it('returns 5 when crossing from 4 to 5', () => {
+    expect(getMilestone(4, 5)).toBe(5);
+  });
+
+  it('returns 10 when crossing from 9 to 10', () => {
+    expect(getMilestone(9, 10)).toBe(10);
+  });
+
+  it('returns 15 when crossing from 14 to 15', () => {
+    expect(getMilestone(14, 15)).toBe(15);
+  });
+
+  it('returns 20 when crossing from 19 to 20', () => {
+    expect(getMilestone(19, 20)).toBe(20);
+  });
+
+  it('returns 30 when crossing from 28 to 30', () => {
+    expect(getMilestone(28, 30)).toBe(30);
+  });
+
+  it('returns 100 when crossing from 99 to 100', () => {
+    expect(getMilestone(99, 100)).toBe(100);
+  });
+
+  it('returns null when already past milestone', () => {
+    expect(getMilestone(21, 22)).toBeNull();
+  });
+
+  it('returns null when both before and after are between milestones', () => {
+    expect(getMilestone(31, 32)).toBeNull();
+  });
+});
+
+describe('getMilestoneBadge', () => {
+  it('returns null for totalProblems below 5', () => {
+    expect(getMilestoneBadge(3)).toBeNull();
+  });
+
+  it('returns bronze for 5-9', () => {
+    expect(getMilestoneBadge(5)).toEqual({ emoji: '🥉', label: '5 題' });
+    expect(getMilestoneBadge(9)).toEqual({ emoji: '🥉', label: '5 題' });
+  });
+
+  it('returns silver for 10-14', () => {
+    expect(getMilestoneBadge(10)).toEqual({ emoji: '🥈', label: '10 題' });
+  });
+
+  it('returns gold for 15-19', () => {
+    expect(getMilestoneBadge(15)).toEqual({ emoji: '🥇', label: '15 題' });
+  });
+
+  it('returns medal for 20-29', () => {
+    expect(getMilestoneBadge(25)).toEqual({ emoji: '🏅', label: '20 題' });
+  });
+
+  it('returns medal for 50-59', () => {
+    expect(getMilestoneBadge(55)).toEqual({ emoji: '🏅', label: '50 題' });
+  });
+
+  it('returns diamond for 100+', () => {
+    expect(getMilestoneBadge(100)).toEqual({ emoji: '💎', label: '100 題' });
+    expect(getMilestoneBadge(150)).toEqual({ emoji: '💎', label: '100 題' });
   });
 });

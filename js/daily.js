@@ -42,3 +42,35 @@ export function getDailySummary(progress) {
   const totalStars = progress.dailyResults.reduce((sum, r) => sum + r.stars, 0);
   return { totalStars, problemCount: progress.dailyResults.length };
 }
+
+const MILESTONES = [5, 10, 15, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+
+export function getMilestone(before, after) {
+  for (let i = MILESTONES.length - 1; i >= 0; i--) {
+    const m = MILESTONES[i];
+    if (before < m && after >= m) return m;
+  }
+  return null;
+}
+
+const BADGES = [
+  { threshold: 100, emoji: '💎', label: '100 題' },
+  { threshold: 90, emoji: '🏅', label: '90 題' },
+  { threshold: 80, emoji: '🏅', label: '80 題' },
+  { threshold: 70, emoji: '🏅', label: '70 題' },
+  { threshold: 60, emoji: '🏅', label: '60 題' },
+  { threshold: 50, emoji: '🏅', label: '50 題' },
+  { threshold: 40, emoji: '🏅', label: '40 題' },
+  { threshold: 30, emoji: '🏅', label: '30 題' },
+  { threshold: 20, emoji: '🏅', label: '20 題' },
+  { threshold: 15, emoji: '🥇', label: '15 題' },
+  { threshold: 10, emoji: '🥈', label: '10 題' },
+  { threshold: 5, emoji: '🥉', label: '5 題' },
+];
+
+export function getMilestoneBadge(totalProblems) {
+  for (const b of BADGES) {
+    if (totalProblems >= b.threshold) return { emoji: b.emoji, label: b.label };
+  }
+  return null;
+}
