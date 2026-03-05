@@ -170,6 +170,14 @@ function updateProgress() {
   }
 }
 
+const CELEBRATION_IMAGES = Array.from({ length: 10 }, (_, i) =>
+  `assets/great-job-${String(i + 1).padStart(2, '0')}.webp`
+);
+
+function randomCelebrationImage() {
+  return CELEBRATION_IMAGES[Math.floor(Math.random() * CELEBRATION_IMAGES.length)];
+}
+
 function showDailyComplete() {
   const summary = getDailySummary(progress);
 
@@ -183,7 +191,7 @@ function showDailyComplete() {
   const content = document.createElement('div');
   content.className = 'fireworks-content';
   content.innerHTML = `
-    <img class="fireworks-img" src="assets/great-job.png" alt="你好棒" onerror="this.style.display='none'">
+    <img class="fireworks-img" src="${randomCelebrationImage()}" alt="你好棒" onerror="this.style.display='none'">
     <div class="fireworks-title">今日練習完成！</div>
     <div class="fireworks-stars">⭐ × ${summary.totalStars}</div>
   `;
