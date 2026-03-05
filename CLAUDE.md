@@ -6,13 +6,18 @@
 ## 技術架構
 - 純前端（HTML/CSS/JS），部署 GitHub Pages
 - ES Modules，無 bundler
-- 測試：Vitest（23 tests passing）
+- 測試：Vitest（30 tests passing）
 
 ## 檔案結構
 - `js/division.js` — 核心除法邏輯（純函式）
 - `js/app.js` — UI 渲染 + 互動 + 遊戲化（狀態機、grid 渲染、數字鍵盤、延遲提示、streak、星星）
+- `js/sound.js` — 音效回饋（Web Audio API 合成：答對/答錯/完成琶音）
+- `js/daily.js` — 每日練習模式（localStorage 進度追蹤、每日 5 題 + 自由練習）
+- `js/fireworks.js` — Canvas 煙火粒子特效（每日完成慶祝）
 - `css/style.css` — 樣式（漸層背景、卡片、grid、numpad、動畫、iPad 安全區域、iPhone 響應式）
-- `tests/division.test.js` — 單元測試（23 tests passing）
+- `tests/division.test.js` — 除法邏輯測試（23 tests）
+- `tests/daily.test.js` — 每日練習邏輯測試（7 tests）
+- `assets/great-job-*.webp` — 10 張慶祝圖片（隨機輪替）
 - `index.html` — 頁面結構
 - `.github/workflows/static.yml` — GitHub Pages 部署 workflow
 
@@ -33,9 +38,6 @@
 - iPhone（≤480px）：`--cell-size: 34px`、numpad 按鈕 64px、壓縮 padding/gap，一屏可見無需滾動
 
 ## 待開發
-- 音效回饋（答對/答錯/完成）
-- 每日練習模式（每日 5 題 + 完成回饋 + 自由練習）
-- localStorage 歷史紀錄
 - 難度選擇（2 位數 / 3 位數 / 4 位數 ÷ 1 位數）
 
 ## 開發指令
