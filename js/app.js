@@ -257,7 +257,7 @@ function updateBadge() {
 
 function startBossMode() {
   bossMode = { stage: 0, lives: 3, totalErrors: 0, starsEarned: 0 };
-  bossEntryEl.hidden = true;
+  bossBtnEl.textContent = '🚪 放棄挑戰';
   updateBossUI();
   startBossStageProblem();
 }
@@ -431,6 +431,7 @@ function showBossDefeat() {
 
 function exitBossMode() {
   bossMode = null;
+  bossBtnEl.textContent = '⚔️ 魔王挑戰';
   document.documentElement.style.removeProperty('--cell-size');
   updateBossUI();
   startNewProblem();
@@ -570,7 +571,11 @@ if (!isDaily(progress)) {
 // Boss button click handler
 bossBtnEl.addEventListener('click', () => {
   resumeAudio();
-  startBossMode();
+  if (bossMode) {
+    exitBossMode();
+  } else {
+    startBossMode();
+  }
 });
 
 startNewProblem();
