@@ -28,8 +28,15 @@
 
 ## 響應式設計
 - 桌機（≥768px）：置中、hover 效果
-- iPad：clamp() 自適應尺寸，safe-area-inset-bottom
+- iPad 橫式 + 桌機寬螢幕（≥768px landscape）：grid 左 + numpad 右並排佈局
+- iPad 直式：clamp() 自適應尺寸，safe-area-inset-bottom，垂直堆疊
 - iPhone（≤480px）：`--cell-size: 34px`、numpad 按鈕 64px、壓縮 padding/gap，一屏可見無需滾動
+
+## 待開發
+- 音效回饋（答對/答錯/完成）
+- 每日練習模式（每日 5 題 + 完成回饋 + 自由練習）
+- localStorage 歷史紀錄
+- 難度選擇（2 位數 / 3 位數 / 4 位數 ÷ 1 位數）
 
 ## 開發指令
 - `npm test` — 執行測試
