@@ -135,7 +135,7 @@ git commit -m "feat: add fireworks.js with Canvas 2D particle system"
 mkdir -p assets
 ```
 
-注意：`assets/great-job.png` 需由使用者提供。如果檔案不存在，overlay 仍正常顯示（只是沒有圖片），煙火和文字不受影響。
+圖片已準備好：`assets/great-job-01.webp` 到 `great-job-10.webp`（10 張，WebP 格式，合計 2.3MB）。
 
 **Step 2: Commit**
 
@@ -164,6 +164,14 @@ import { launchFireworks } from './fireworks.js';
 將 `js/app.js` 中的 `showDailyComplete` 函式（目前約第 172-192 行）整個替換為：
 
 ```js
+const CELEBRATION_IMAGES = Array.from({ length: 10 }, (_, i) =>
+  `assets/great-job-${String(i + 1).padStart(2, '0')}.webp`
+);
+
+function randomCelebrationImage() {
+  return CELEBRATION_IMAGES[Math.floor(Math.random() * CELEBRATION_IMAGES.length)];
+}
+
 function showDailyComplete() {
   const summary = getDailySummary(progress);
 
@@ -179,7 +187,7 @@ function showDailyComplete() {
   const content = document.createElement('div');
   content.className = 'fireworks-content';
   content.innerHTML = `
-    <img class="fireworks-img" src="assets/great-job.png" alt="你好棒" onerror="this.style.display='none'">
+    <img class="fireworks-img" src="${randomCelebrationImage()}" alt="你好棒" onerror="this.style.display='none'">
     <div class="fireworks-title">今日練習完成！</div>
     <div class="fireworks-stars">⭐ × ${summary.totalStars}</div>
   `;
@@ -314,6 +322,6 @@ git push
 | 檔案 | 動作 | 行數變化 |
 |------|------|----------|
 | `js/fireworks.js` | 新增 | ~75 行 |
-| `js/app.js` | 修改 | ~+10 行（import + 替換 showDailyComplete） |
+| `js/app.js` | 修改 | ~+15 行（import + 隨機圖片 + 替換 showDailyComplete） |
 | `css/style.css` | 修改 | ~50 行 |
-| `assets/` | 新增目錄 | — |
+| `assets/great-job-*.webp` | 已存在 | 10 張圖片，合計 2.3MB |
