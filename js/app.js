@@ -1,6 +1,6 @@
 import { generateProblem, calculateSteps, generateLayout, validateInput } from './division.js';
 import { resumeAudio, playCorrect, playError, playComplete } from './sound.js';
-import { loadProgress, saveResult, isDaily, getDailySummary, DAILY_GOAL } from './daily.js';
+import { loadProgress, saveResult, isDaily, getDailySummary, DAILY_GOAL, getMilestone, getMilestoneBadge } from './daily.js';
 import { launchFireworks } from './fireworks.js';
 
 const grid = document.getElementById('division-grid');
@@ -10,6 +10,7 @@ const streakEl = document.getElementById('streak');
 const streakCountEl = streakEl.querySelector('.streak-count');
 const starsEl = document.getElementById('stars');
 const totalStarsEl = document.getElementById('total-stars');
+const badgeEl = document.getElementById('badge');
 
 let state = null;
 let streak = 0;
@@ -32,6 +33,7 @@ function startNewProblem() {
   updateHint();
   updateProgress();
   updateTotalStars();
+  updateBadge();
 }
 
 // Layout row → CSS grid row (inserting line rows for division-line and sep-lines)
@@ -171,6 +173,37 @@ function showCelebration(stars) {
   setTimeout(() => overlay.remove(), 2500);
 }
 
+function showMilestone(milestone) {
+  const badge = getMilestoneBadge(milestone);
+  if (!badge) return;
+
+  const overlay = document.createElement('div');
+  overlay.className = 'celebration';
+
+  const content = document.createElement('div');
+  content.className = 'milestone-content';
+
+  const emojiEl = document.createElement('div');
+  emojiEl.className = 'milestone-emoji';
+  emojiEl.textContent = badge.emoji;
+
+  const title = document.createElement('div');
+  title.className = 'milestone-title';
+  title.textContent = `累計 ${milestone} 題！`;
+
+  const sub = document.createElement('div');
+  sub.className = 'milestone-sub';
+  sub.textContent = milestone === 100 ? '太強了！' : '繼續加油！';
+
+  content.appendChild(emojiEl);
+  content.appendChild(title);
+  content.appendChild(sub);
+  overlay.appendChild(content);
+  document.body.appendChild(overlay);
+
+  setTimeout(() => overlay.remove(), 3000);
+}
+
 function updateProgress() {
   const progressEl = document.getElementById('progress');
   if (!progressEl) return;
@@ -183,6 +216,16 @@ function updateProgress() {
 
 function updateTotalStars() {
   totalStarsEl.textContent = `⭐ ${progress.totalStars}`;
+}
+
+function updateBadge() {
+  const badge = getMilestoneBadge(progress.totalProblems);
+  if (badge) {
+    badgeEl.textContent = `${badge.emoji} ${badge.label}`;
+    badgeEl.hidden = false;
+  } else {
+    badgeEl.hidden = true;
+  }
 }
 
 const CELEBRATION_IMAGES = Array.from({ length: 10 }, (_, i) =>
@@ -228,14 +271,21 @@ function onProblemComplete() {
   const stars = getStars(state.errors);
   streak++;
 
+  const prevTotal = progress.totalProblems;
   progress = saveResult(localStorage, progress, { stars, errors: state.errors });
 
   updateStreak();
   updateTotalStars();
+  updateBadge();
   updateProgress();
+
+  const milestone = getMilestone(prevTotal, progress.totalProblems);
 
   if (progress.dailyCompleted === DAILY_GOAL) {
     showDailyComplete();
+  } else if (milestone) {
+    showMilestone(milestone);
+    setTimeout(startNewProblem, 3500);
   } else {
     showCelebration(stars);
     setTimeout(startNewProblem, 3000);
