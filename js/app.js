@@ -28,6 +28,7 @@ const BOSS_STAGES = [
 let bossMode = null; // null | { stage, lives, totalErrors, starsEarned }
 
 function startNewProblem() {
+  bossEntryEl.hidden = true;  // Reset: will be shown later if daily complete
   const { dividend, divisor } = generateProblem();
   const steps = calculateSteps(dividend, divisor);
   const layout = generateLayout(steps, dividend, divisor);
