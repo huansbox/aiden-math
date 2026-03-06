@@ -433,6 +433,10 @@ body {
     align-self: center;
   }
 
+  .numpad-grid {
+    max-width: 420px;
+    gap: 16px;
+  }
 }
 
 /* === Mobile (iPhone) === */
