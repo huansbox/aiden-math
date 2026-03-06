@@ -82,9 +82,14 @@ body {
 }
 
 /* === Boss challenge === */
-.boss-entry {
+.title-group {
   display: flex;
-  justify-content: center;
+  align-items: center;
+  gap: 12px;
+}
+
+.boss-entry {
+  display: inline-flex;
 }
 
 .boss-btn {
@@ -93,10 +98,10 @@ body {
   background: linear-gradient(135deg, #e53935, #d32f2f);
   color: #fff;
   font-family: inherit;
-  font-size: clamp(1.1rem, 4vw, 1.4rem);
+  font-size: clamp(0.85rem, 2.5vw, 1rem);
   font-weight: 900;
-  padding: 12px 32px;
-  border-radius: 16px;
+  padding: 8px 18px;
+  border-radius: 10px;
   cursor: pointer;
   box-shadow: 0 4px 16px rgba(229, 57, 53, 0.4);
   transition: transform 0.15s, box-shadow 0.15s;
@@ -428,9 +433,6 @@ body {
     align-self: center;
   }
 
-  .boss-entry {
-    grid-column: 1 / -1;
-  }
 }
 
 /* === Mobile (iPhone) === */
@@ -492,8 +494,8 @@ body {
   }
 
   .boss-btn {
-    font-size: 1rem;
-    padding: 10px 24px;
+    font-size: 0.8rem;
+    padding: 6px 14px;
   }
 
   .boss-lives {
