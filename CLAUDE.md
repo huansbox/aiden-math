@@ -14,7 +14,8 @@
 - `js/sound.js` — 音效回饋（Web Audio API 合成：答對/答錯/完成琶音）
 - `js/daily.js` — 每日練習模式（localStorage 進度追蹤、每日 5 題 + 自由練習、里程碑判定）
 - `js/fireworks.js` — Canvas 煙火粒子特效（每日完成慶祝）
-- `css/style.css` — 樣式（漸層背景、卡片、grid、numpad、動畫、iPad 安全區域、iPhone 響應式）
+- `css/style.css` — 樣式（漸層背景、卡片、grid、numpad、動畫、iPad 安全區域、iPhone 響應式、title-group）
+- `manifest.json` — PWA Web App Manifest（standalone 模式）
 - `tests/division.test.js` — 除法邏輯測試（30 tests）
 - `tests/daily.test.js` — 每日練習 + 里程碑邏輯測試（23 tests）
 - `assets/great-job-*.webp` — 10 張慶祝圖片（隨機輪替）
@@ -31,11 +32,19 @@
 - GitHub Pages: https://huansbox.github.io/aiden-math/
 - 自動部署：push 到 main 即觸發
 
+## PWA
+- iOS Safari「加入主畫面」後以 standalone 模式開啟（無網址列）
+- `apple-mobile-web-app-capable` + `manifest.json` display: standalone
+- 注意：standalone 模式下 Safari 從記憶體恢復時不重新載入 HTML，DOM 狀態會保留
+
 ## 響應式設計
 - 桌機（≥768px）：置中、hover 效果
-- iPad 橫式 + 桌機寬螢幕（≥768px landscape）：grid 左 + numpad 右並排佈局
+- iPad 橫式 + 桌機寬螢幕（≥768px landscape）：grid 左 + numpad 右並排佈局，numpad gap 加寬
 - iPad 直式：clamp() 自適應尺寸，safe-area-inset-bottom，垂直堆疊
 - iPhone（≤480px）：`--cell-size: 34px`、numpad 按鈕 64px、壓縮 padding/gap，一屏可見無需滾動
+
+## CSS 注意事項
+- 對使用 `hidden` 屬性的元素，若 CSS 有明確設定 `display`，必須加 `[hidden] { display: none }` 覆寫
 
 ## 待開發
 - 難度選擇（2 位數 / 3 位數 / 4 位數 ÷ 1 位數）
