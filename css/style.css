@@ -92,6 +92,10 @@ body {
   display: inline-flex;
 }
 
+.boss-entry[hidden] {
+  display: none;
+}
+
 .boss-btn {
   appearance: none;
   border: none;
