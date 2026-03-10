@@ -438,8 +438,14 @@ body {
   }
 
   .numpad-grid {
-    max-width: 420px;
+    max-width: 500px;
     gap: 16px;
+  }
+
+  .num-btn {
+    max-width: 140px;
+    max-height: 140px;
+    font-size: 2.2rem;
   }
 }
 
