@@ -39,12 +39,14 @@
 
 ## 響應式設計
 - 桌機（≥768px）：置中、hover 效果
-- iPad 橫式 + 桌機寬螢幕（≥768px landscape）：grid 左 + numpad 右並排佈局，numpad gap 加寬
+- iPad 橫式 + 桌機寬螢幕（≥768px landscape）：grid 左 + numpad 右並排佈局，numpad 按鈕固定 140px、gap 加寬
 - iPad 直式：clamp() 自適應尺寸，safe-area-inset-bottom，垂直堆疊
 - iPhone（≤480px）：`--cell-size: 34px`、numpad 按鈕 64px、壓縮 padding/gap，一屏可見無需滾動
 
 ## CSS 注意事項
 - 對使用 `hidden` 屬性的元素，若 CSS 有明確設定 `display`，必須加 `[hidden] { display: none }` 覆寫
+- CSS Grid `auto` 欄位內的子元素不要用 `width: 100%` + `max-width`，會因循環依賴導致尺寸過小；改用固定 `width`/`height`
+- `index.html` 的 `style.css` 引用帶 cache-busting 參數（`?v=YYYYMMDD`），每次改 CSS 時需更新
 
 ## 待開發
 - 難度選擇（2 位數 / 3 位數 / 4 位數 ÷ 1 位數）
