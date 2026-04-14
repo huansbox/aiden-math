@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>應用題 - 複名數練習</title>
+<style>
+  @page {
+    size: A4 portrait;
+    margin: 1.3cm 1.8cm;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    color: #000;
+    background: #fff;
+  }
+  body {
+    font-family: "標楷體", "DFKai-SB", "BiauKai", "Kaiti TC", serif;
+    padding: 1.3cm 1.8cm;
+    width: 21cm;
+    margin: 0 auto;
+  }
+  .problem-block {
+    margin-bottom: 1.5cm;
+    page-break-inside: avoid;
+  }
+  .problem {
+    font-size: 18pt;
+    line-height: 1.65;
+    margin-bottom: 0.5cm;
+    text-align: justify;
+  }
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 0.4cm;
+    margin: 0.55cm 0;
+  }
+  .step-num {
+    font-size: 24pt;
+    font-weight: bold;
+    min-width: 1cm;
+    flex-shrink: 0;
+  }
+  .num-box {
+    width: 3cm;
+    height: 1.5cm;
+    border: 2.5px solid #000;
+    border-radius: 5px;
+    flex-shrink: 0;
+  }
+  .op-circle {
+    width: 1.1cm;
+    height: 1.1cm;
+    border: 2.5px solid #000;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .equals {
+    font-size: 25pt;
+    font-weight: bold;
+    flex-shrink: 0;
+  }
+  .unit {
+    font-size: 18pt;
+    margin-left: 0.3cm;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .ans-label {
+    font-size: 20pt;
+    font-weight: bold;
+    flex-shrink: 0;
+  }
+  .small-box {
+    width: 2cm;
+    height: 1.5cm;
+    border: 2.5px solid #000;
+    border-radius: 5px;
+    flex-shrink: 0;
+  }
+  .inline-unit {
+    font-size: 20pt;
+    flex-shrink: 0;
+    margin: 0 0.15cm;
+  }
+  @media print {
+    body {
+      padding: 0;
+      width: 100%;
+    }
+  }
+</style>
+</head>
+<body>
+
+  <!-- 題 7 -->
+  <div class="problem-block">
+    <div class="problem">甲包裹重 3 公斤 350 公克，乙包裹比甲包裹重 650 公克，兩個包裹一共重多少公斤、多少公克？</div>
+
+    <div class="step">
+      <span class="step-num">①</span>
+      <span class="num-box"></span>
+      <span class="op-circle"></span>
+      <span class="num-box"></span>
+      <span class="equals">＝</span>
+      <span class="num-box"></span>
+      <span class="unit">（公克）</span>
+    </div>
+
+    <div class="step">
+      <span class="step-num">②</span>
+      <span class="num-box"></span>
+      <span class="op-circle"></span>
+      <span class="num-box"></span>
+      <span class="equals">＝</span>
+      <span class="num-box"></span>
+      <span class="unit">（公克）</span>
+    </div>
+
+    <div class="step">
+      <span class="step-num">③</span>
+      <span class="ans-label">總重</span>
+      <span class="equals">＝</span>
+      <span class="small-box"></span>
+      <span class="inline-unit">公斤</span>
+      <span class="num-box"></span>
+      <span class="inline-unit">公克</span>
+    </div>
+  </div>
+
+  <!-- 題 8 -->
+  <div class="problem-block">
+    <div class="problem">一瓶牛奶重 1 公斤 150 公克，牛奶比優酪乳重 80 公克。媽媽各買一瓶，總共重幾公斤幾公克？</div>
+
+    <div class="step">
+      <span class="step-num">①</span>
+      <span class="num-box"></span>
+      <span class="op-circle"></span>
+      <span class="num-box"></span>
+      <span class="equals">＝</span>
+      <span class="num-box"></span>
+      <span class="unit">（公克）</span>
+    </div>
+
+    <div class="step">
+      <span class="step-num">②</span>
+      <span class="num-box"></span>
+      <span class="op-circle"></span>
+      <span class="num-box"></span>
+      <span class="equals">＝</span>
+      <span class="num-box"></span>
+      <span class="unit">（公克）</span>
+    </div>
+
+    <div class="step">
+      <span class="step-num">③</span>
+      <span class="ans-label">總重</span>
+      <span class="equals">＝</span>
+      <span class="small-box"></span>
+      <span class="inline-unit">公斤</span>
+      <span class="num-box"></span>
+      <span class="inline-unit">公克</span>
+    </div>
+  </div>
+
+</body>
+</html>

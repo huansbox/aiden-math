@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>應用題練習 - 一頁 4 題</title>
+<style>
+  @page {
+    size: A4 portrait;
+    margin: 1.3cm 1.8cm;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    color: #000;
+    background: #fff;
+  }
+  body {
+    font-family: "標楷體", "DFKai-SB", "BiauKai", "Kaiti TC", serif;
+    padding: 1.3cm 1.8cm;
+    width: 21cm;
+    margin: 0 auto;
+  }
+  .problem-block {
+    margin-bottom: 1cm;
+    page-break-inside: avoid;
+  }
+  .problem {
+    font-size: 18pt;
+    line-height: 1.65;
+    margin-bottom: 0.6cm;
+    text-align: justify;
+  }
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 0.4cm;
+    margin: 0.55cm 0;
+  }
+  .step-num {
+    font-size: 24pt;
+    font-weight: bold;
+    min-width: 1cm;
+    flex-shrink: 0;
+  }
+  .num-box {
+    width: 2.9cm;
+    height: 1.5cm;
+    border: 2.5px solid #000;
+    border-radius: 5px;
+    flex-shrink: 0;
+  }
+  .op-circle {
+    width: 1.1cm;
+    height: 1.1cm;
+    border: 2.5px solid #000;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .equals {
+    font-size: 25pt;
+    font-weight: bold;
+    flex-shrink: 0;
+  }
+  .unit {
+    font-size: 18pt;
+    margin-left: 0.3cm;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  @media print {
+    body {
+      padding: 0;
+      width: 100%;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="problem-block">
+    <div class="problem">每 6 個小籠包放在一個蒸籠裡。阿姨上午做了 84 個小籠包，下午做了 126 個小籠包，阿姨一共需要幾個蒸籠？</div>
+    <div class="step">
+      <span class="step-num">①</span>
+      <span class="num-box"></span>
+      <span class="op-circle"></span>
+      <span class="num-box"></span>
+      <span class="equals">＝</span>
+      <span class="num-box"></span>
+      <span class="unit">（個小籠包）</span>
+    </div>
+    <div class="step">
+      <span class="step-num">②</span>
+      <span class="num-box"></span>
+      <span class="op-circle"></span>
+      <span class="num-box"></span>
+      <span class="equals">＝</span>
+      <span class="num-box"></span>
+      <span class="unit">（個蒸籠）</span>
+    </div>
+  </div>
+
+  <div class="problem-block">
+    <div class="problem">國毅有 160 元，用掉 20 元後去 7-11 買了 4 瓶果汁，請問果汁一瓶多少元？</div>
+    <div class="step">
+      <span class="step-num">①</span>
+      <span class="num-box"></span>
+      <span class="op-circle"></span>
+      <span class="num-box"></span>
+      <span class="equals">＝</span>
+      <span class="num-box"></span>
+      <span class="unit">（元）</span>
+    </div>
+    <div class="step">
+      <span class="step-num">②</span>
+      <span class="num-box"></span>
+      <span class="op-circle"></span>
+      <span class="num-box"></span>
+      <span class="equals">＝</span>
+      <span class="num-box"></span>
+      <span class="unit">（元）</span>
+    </div>
+  </div>
+
+  <div class="problem-block">
+    <div class="problem">一瓶牛奶有 530 毫升，用這瓶牛奶做了 3 個相同的布丁後，剩下 80 毫升。做一個布丁用掉幾毫升的牛奶？</div>
+    <div class="step">
+      <span class="step-num">①</span>
+      <span class="num-box"></span>
+      <span class="op-circle"></span>
+      <span class="num-box"></span>
+      <span class="equals">＝</span>
+      <span class="num-box"></span>
+      <span class="unit">（毫升）</span>
+    </div>
+    <div class="step">
+      <span class="step-num">②</span>
+      <span class="num-box"></span>
+      <span class="op-circle"></span>
+      <span class="num-box"></span>
+      <span class="equals">＝</span>
+      <span class="num-box"></span>
+      <span class="unit">（毫升）</span>
+    </div>
+  </div>
+
+  <div class="problem-block">
+    <div class="problem">媽媽帶了 657 元，想要買 3 頂一樣的帽子，還不夠 108 元，一頂帽子多少元？</div>
+    <div class="step">
+      <span class="step-num">①</span>
+      <span class="num-box"></span>
+      <span class="op-circle"></span>
+      <span class="num-box"></span>
+      <span class="equals">＝</span>
+      <span class="num-box"></span>
+      <span class="unit">（元）</span>
+    </div>
+    <div class="step">
+      <span class="step-num">②</span>
+      <span class="num-box"></span>
+      <span class="op-circle"></span>
+      <span class="num-box"></span>
+      <span class="equals">＝</span>
+      <span class="num-box"></span>
+      <span class="unit">（元）</span>
+    </div>
+  </div>
+
+  <div class="problem-block">
+    <div class="problem">國毅做卡片，用一條 160 公分的緞帶圍成一個正方形，發現還不夠 20 公分，請問正方形的邊長是幾公分？</div>
+    <div class="step">
+      <span class="step-num">①</span>
+      <span class="num-box"></span>
+      <span class="op-circle"></span>
+      <span class="num-box"></span>
+      <span class="equals">＝</span>
+      <span class="num-box"></span>
+      <span class="unit">（公分）</span>
+    </div>
+    <div class="step">
+      <span class="step-num">②</span>
+      <span class="num-box"></span>
+      <span class="op-circle"></span>
+      <span class="num-box"></span>
+      <span class="equals">＝</span>
+      <span class="num-box"></span>
+      <span class="unit">（公分）</span>
+    </div>
+  </div>
+
+  <div class="problem-block">
+    <div class="problem">奶奶把 435 元平分給思雨和 4 個孫子。如果思雨原來有 95 元，那現在思雨有多少元？</div>
+    <div class="step">
+      <span class="step-num">①</span>
+      <span class="num-box"></span>
+      <span class="op-circle"></span>
+      <span class="num-box"></span>
+      <span class="equals">＝</span>
+      <span class="num-box"></span>
+      <span class="unit">（元）</span>
+    </div>
+    <div class="step">
+      <span class="step-num">②</span>
+      <span class="num-box"></span>
+      <span class="op-circle"></span>
+      <span class="num-box"></span>
+      <span class="equals">＝</span>
+      <span class="num-box"></span>
+      <span class="unit">（元）</span>
+    </div>
+  </div>
+</body>
+</html>

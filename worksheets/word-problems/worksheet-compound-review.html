@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>應用題 - 複名數複習單（2 份）</title>
+<style>
+  @page {
+    size: A4 portrait;
+    margin: 1.3cm 1.8cm;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    color: #000;
+    background: #fff;
+  }
+  body {
+    font-family: "標楷體", "DFKai-SB", "BiauKai", "Kaiti TC", serif;
+    padding: 1.3cm 1.8cm;
+    width: 21cm;
+    margin: 0 auto;
+  }
+  .page {
+    page-break-after: always;
+  }
+  .page:last-child {
+    page-break-after: auto;
+  }
+  .problem-block {
+    margin-bottom: 0.7cm;
+    page-break-inside: avoid;
+  }
+  .problem {
+    font-size: 18pt;
+    line-height: 1.6;
+    margin-bottom: 0.4cm;
+    text-align: justify;
+  }
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 0.4cm;
+    margin: 0.4cm 0;
+  }
+  .step-num {
+    font-size: 24pt;
+    font-weight: bold;
+    min-width: 1cm;
+    flex-shrink: 0;
+  }
+  .num-box {
+    width: 2.9cm;
+    height: 1.45cm;
+    border: 2.5px solid #000;
+    border-radius: 5px;
+    flex-shrink: 0;
+  }
+  .op-circle {
+    width: 1.05cm;
+    height: 1.05cm;
+    border: 2.5px solid #000;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .equals {
+    font-size: 24pt;
+    font-weight: bold;
+    flex-shrink: 0;
+  }
+  .unit {
+    font-size: 18pt;
+    margin-left: 0.3cm;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .ans-label {
+    font-size: 20pt;
+    font-weight: bold;
+    flex-shrink: 0;
+  }
+  .small-box {
+    width: 1.9cm;
+    height: 1.45cm;
+    border: 2.5px solid #000;
+    border-radius: 5px;
+    flex-shrink: 0;
+  }
+  .inline-unit {
+    font-size: 20pt;
+    flex-shrink: 0;
+    margin: 0 0.15cm;
+  }
+  @media screen {
+    .page {
+      margin-bottom: 2cm;
+      padding-bottom: 1cm;
+      border-bottom: 2px dashed #ccc;
+    }
+    .page:last-child {
+      border-bottom: none;
+    }
+  }
+  @media print {
+    body {
+      padding: 0;
+      width: 100%;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- =========================  第 1 頁  ========================= -->
+<div class="page">
+
+  <!-- 7-1 書包與水壺（初階，2 step） -->
+  <div class="problem-block">
+    <div class="problem">小明的書包重 800 公克，水壺比書包重 150 公克。書包和水壺一共重幾公克？</div>
+    <div class="step">
+      <span class="step-num">①</span>
+      <span class="num-box"></span>
+      <span class="op-circle"></span>
+      <span class="num-box"></span>
+      <span class="equals">＝</span>
+      <span class="num-box"></span>
+      <span class="unit">（公克）</span>
+    </div>
+    <div class="step">
+      <span class="step-num">②</span>
+      <span class="num-box"></span>
+      <span class="op-circle"></span>
+      <span class="num-box"></span>
+      <span class="equals">＝</span>
+      <span class="num-box"></span>
+      <span class="unit">（公克）</span>
+    </div>
+  </div>
+
+  <!-- 8-2 籃球與足球（初階，2 step） -->
+  <div class="problem-block">
+    <div class="problem">籃球重 600 公克，籃球比足球重 150 公克。兩顆球一共重幾公克？</div>
+    <div class="step">
+      <span class="step-num">①</span>
+      <span class="num-box"></span>
+      <span class="op-circle"></span>
+      <span class="num-box"></span>
+      <span class="equals">＝</span>
+      <span class="num-box"></span>
+      <span class="unit">（公克）</span>
+    </div>
+    <div class="step">
+      <span class="step-num">②</span>
+      <span class="num-box"></span>
+      <span class="op-circle"></span>
+      <span class="num-box"></span>
+      <span class="equals">＝</span>
+      <span class="num-box"></span>
+      <span class="unit">（公克）</span>
+    </div>
+  </div>
+
+  <!-- 7-3 兩袋米（進階，3 step） -->
+  <div class="problem-block">
+    <div class="problem">大袋米重 2 公斤 300 公克，小袋米比大袋米重 200 公克。兩袋米一共重多少公斤多少公克？</div>
+    <div class="step">
+      <span class="step-num">①</span>
+      <span class="num-box"></span>
+      <span class="op-circle"></span>
+      <span class="num-box"></span>
+      <span class="equals">＝</span>
+      <span class="num-box"></span>
+      <span class="unit">（公克）</span>
+    </div>
+    <div class="step">
+      <span class="step-num">②</span>
+      <span class="num-box"></span>
+      <span class="op-circle"></span>
+      <span class="num-box"></span>
+      <span class="equals">＝</span>
+      <span class="num-box"></span>
+      <span class="unit">（公克）</span>
+    </div>
+    <div class="step">
+      <span class="step-num">③</span>
+      <span class="ans-label">總重</span>
+      <span class="equals">＝</span>
+      <span class="small-box"></span>
+      <span class="inline-unit">公斤</span>
+      <span class="num-box"></span>
+      <span class="inline-unit">公克</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- =========================  第 2 頁  ========================= -->
+<div class="page">
+
+  <!-- 7-4 兩盒水果（進階，3 step） -->
+  <div class="problem-block">
+    <div class="problem">蘋果盒重 1 公斤 600 公克，橘子盒比蘋果盒重 400 公克。兩盒水果一共重多少公斤多少公克？</div>
+    <div class="step">
+      <span class="step-num">①</span>
+      <span class="num-box"></span>
+      <span class="op-circle"></span>
+      <span class="num-box"></span>
+      <span class="equals">＝</span>
+      <span class="num-box"></span>
+      <span class="unit">（公克）</span>
+    </div>
+    <div class="step">
+      <span class="step-num">②</span>
+      <span class="num-box"></span>
+      <span class="op-circle"></span>
+      <span class="num-box"></span>
+      <span class="equals">＝</span>
+      <span class="num-box"></span>
+      <span class="unit">（公克）</span>
+    </div>
+    <div class="step">
+      <span class="step-num">③</span>
+      <span class="ans-label">總重</span>
+      <span class="equals">＝</span>
+      <span class="small-box"></span>
+      <span class="inline-unit">公斤</span>
+      <span class="num-box"></span>
+      <span class="inline-unit">公克</span>
+    </div>
+  </div>
+
+  <!-- 8-3 兩包肉（進階，3 step） -->
+  <div class="problem-block">
+    <div class="problem">雞肉重 1 公斤 400 公克，雞肉比豬肉重 300 公克。兩包肉一共重多少公斤多少公克？</div>
+    <div class="step">
+      <span class="step-num">①</span>
+      <span class="num-box"></span>
+      <span class="op-circle"></span>
+      <span class="num-box"></span>
+      <span class="equals">＝</span>
+      <span class="num-box"></span>
+      <span class="unit">（公克）</span>
+    </div>
+    <div class="step">
+      <span class="step-num">②</span>
+      <span class="num-box"></span>
+      <span class="op-circle"></span>
+      <span class="num-box"></span>
+      <span class="equals">＝</span>
+      <span class="num-box"></span>
+      <span class="unit">（公克）</span>
+    </div>
+    <div class="step">
+      <span class="step-num">③</span>
+      <span class="ans-label">總重</span>
+      <span class="equals">＝</span>
+      <span class="small-box"></span>
+      <span class="inline-unit">公斤</span>
+      <span class="num-box"></span>
+      <span class="inline-unit">公克</span>
+    </div>
+  </div>
+
+  <!-- 8-4 兩個西瓜（進階 + 借位 + 進位，3 step） -->
+  <div class="problem-block">
+    <div class="problem">大西瓜重 3 公斤 600 公克，大西瓜比小西瓜重 700 公克。兩個西瓜一共重多少公斤多少公克？</div>
+    <div class="step">
+      <span class="step-num">①</span>
+      <span class="num-box"></span>
+      <span class="op-circle"></span>
+      <span class="num-box"></span>
+      <span class="equals">＝</span>
+      <span class="num-box"></span>
+      <span class="unit">（公克）</span>
+    </div>
+    <div class="step">
+      <span class="step-num">②</span>
+      <span class="num-box"></span>
+      <span class="op-circle"></span>
+      <span class="num-box"></span>
+      <span class="equals">＝</span>
+      <span class="num-box"></span>
+      <span class="unit">（公克）</span>
+    </div>
+    <div class="step">
+      <span class="step-num">③</span>
+      <span class="ans-label">總重</span>
+      <span class="equals">＝</span>
+      <span class="small-box"></span>
+      <span class="inline-unit">公斤</span>
+      <span class="num-box"></span>
+      <span class="inline-unit">公克</span>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
