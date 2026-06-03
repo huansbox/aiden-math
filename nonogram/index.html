@@ -22,7 +22,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=20260603h">
+  <link rel="stylesheet" href="css/style.css?v=20260603i">
 </head>
 <body>
   <div class="container">
@@ -33,22 +33,9 @@
 
     <!-- 首頁：編號題庫（不顯示單字以免劇透） -->
     <main id="home" class="card home" hidden>
-      <h2 class="home-title">選一題開始玩</h2>
-      <div id="library" class="library" aria-label="題庫"></div>
-
-      <!-- 自訂出題：打一個單字即時生成謎題（臨時遊玩、不進題庫、不記紀錄） -->
-      <section class="custom" aria-label="自訂出題">
-        <h3 class="custom-title">自己出一題 ✏️</h3>
-        <p class="custom-sub">打一個英文單字或數字，馬上變成謎題！</p>
-        <div id="custom-display" class="custom-display" aria-live="polite"></div>
-        <div id="custom-keyboard" class="keyboard keyboard--custom"></div>
-        <p id="custom-hint" class="custom-hint" aria-live="polite"></p>
-        <button id="custom-start-btn" class="btn btn--primary" disabled>開始玩</button>
-      </section>
-
-      <!-- 設定：主題／填色（切換即套用並記住） -->
-      <section class="settings" aria-label="設定">
-        <h3 class="custom-title">設定 ⚙️</h3>
+      <!-- 設定：齒輪鈕收合，點開才浮出設定面板（省主畫面空間）。 -->
+      <button id="settings-toggle" class="settings-toggle" aria-label="設定" aria-expanded="false" aria-controls="settings">⚙️</button>
+      <section id="settings" class="settings" aria-label="設定" hidden>
         <div class="setting-row">
           <span class="setting-label">主題</span>
           <div class="seg" id="theme-seg" role="group" aria-label="主題">
@@ -63,6 +50,19 @@
             <button class="seg-btn" data-fill="letter">按字母變色</button>
           </div>
         </div>
+      </section>
+
+      <h2 class="home-title">選一題開始玩</h2>
+      <div id="library" class="library" aria-label="題庫"></div>
+
+      <!-- 自訂出題：暫時從首頁隱藏（程式碼與測試保留），待主畫面優化後由 app.js 的 SHOW_CUSTOM 開回。 -->
+      <section id="custom" class="custom" aria-label="自訂出題" hidden>
+        <h3 class="custom-title">自己出一題 ✏️</h3>
+        <p class="custom-sub">打一個英文單字或數字，馬上變成謎題！</p>
+        <div id="custom-display" class="custom-display" aria-live="polite"></div>
+        <div id="custom-keyboard" class="keyboard keyboard--custom"></div>
+        <p id="custom-hint" class="custom-hint" aria-live="polite"></p>
+        <button id="custom-start-btn" class="btn btn--primary" disabled>開始玩</button>
       </section>
     </main>
 

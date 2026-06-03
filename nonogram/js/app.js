@@ -37,6 +37,9 @@ const els = {
   customKeyboard: document.getElementById('custom-keyboard'),
   customHint: document.getElementById('custom-hint'),
   customStartBtn: document.getElementById('custom-start-btn'),
+  custom: document.getElementById('custom'),
+  settingsToggle: document.getElementById('settings-toggle'),
+  settings: document.getElementById('settings'),
   themeSeg: document.getElementById('theme-seg'),
   fillSeg: document.getElementById('fill-seg'),
   puzzleLabel: document.getElementById('puzzle-label'),
@@ -57,6 +60,9 @@ const els = {
 
 // 過關／看答案時按字母上色用的調色盤（依字母序循環）。
 const LETTER_COLORS = ['#e8554e', '#f5a623', '#3fb55f', '#2b8fd6', '#9b59b6', '#e07ec0'];
+
+// 自訂出題暫時從首頁隱藏（程式碼、事件、測試全保留）；要在首頁開回，改成 true 即可。
+const SHOW_CUSTOM = false;
 
 // ---- 狀態 ----
 let words = [];        // 題庫單字（已過濾為可玩）
@@ -84,6 +90,7 @@ function showView(name) {
 function showHome() {
   currentIndex = -1;
   isCustom = false;
+  setSettingsOpen(false); // 回首頁時設定浮層恢復收合
   renderLibrary();
   showView('home');
 }
@@ -476,6 +483,22 @@ els.fillSeg.addEventListener('click', (e) => {
   applySettings();
 });
 
+// ---- 設定浮層開合（齒輪鈕）----
+function setSettingsOpen(open) {
+  els.settings.hidden = !open;
+  els.settingsToggle.setAttribute('aria-expanded', String(open));
+}
+els.settingsToggle.addEventListener('click', (e) => {
+  e.stopPropagation(); // 別讓下面的「點外面收起」立刻又把它關掉
+  setSettingsOpen(els.settings.hidden);
+});
+// 點浮層以外處收起（點浮層內切換主題/填色不收）。
+document.addEventListener('click', (e) => {
+  if (els.settings.hidden) return;
+  if (els.settings.contains(e.target) || els.settingsToggle.contains(e.target)) return;
+  setSettingsOpen(false);
+});
+
 // ---- 檢查 ----
 function clearHint() {
   els.hint.textContent = '';
@@ -574,8 +597,12 @@ els.allclearHomeBtn.addEventListener('click', showHome);
 async function init() {
   applySettings();
   renderKeyboard(els.keyboard);
-  renderKeyboard(els.customKeyboard);
-  refreshCustomState();
+  // 自訂出題暫時隱藏（SHOW_CUSTOM）；保留 DOM 與事件，僅在開啟時才渲染其鍵盤。
+  els.custom.hidden = !SHOW_CUSTOM;
+  if (SHOW_CUSTOM) {
+    renderKeyboard(els.customKeyboard);
+    refreshCustomState();
+  }
   // 先顯示首頁並標示載入中，避免 fetch 期間整頁空白。
   showView('home');
   showLibraryMessage('載入中⋯');
