@@ -426,13 +426,19 @@ els.replayBtn.addEventListener('click', () => {
   if (currentIndex >= 0) loadPuzzle(currentIndex);
 });
 
-// ---- 下一題（跳到下一個未過關的題；全部過關則進全破畫面）----
+// ---- 下一題（跳到下一個未過關的題；全部過關才進全破畫面）----
+// nextUnsolvedIndex 不含 current，回 null 代表「沒有其他未過關題」。此時要再分辨：
+//   - 這題自己也真的過關了 → 整個題庫都破完 → 全部過關畫面。
+//   - 這題還沒過關（剛按過「看答案」，不計過關）→ 唯一未破的就是這題，不可誤判全破；
+//     跳到下一個編號讓孩子繼續玩／重玩（看答案另有「重玩」可回到本題）。
 els.nextBtn.addEventListener('click', () => {
   const next = nextUnsolvedIndex(solvedKeys, words, currentIndex);
-  if (next === null) {
+  if (next !== null) {
+    loadPuzzle(next);
+  } else if (isSolved(solvedKeys, currentWord)) {
     showAllClear();
   } else {
-    loadPuzzle(next);
+    loadPuzzle((currentIndex + 1) % words.length);
   }
 });
 
