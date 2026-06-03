@@ -6,11 +6,12 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#1b2a4a">
+  <link rel="manifest" href="manifest.json">
   <title>數織解謎</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=20260603g">
+  <link rel="stylesheet" href="css/style.css?v=20260603h">
 </head>
 <body>
   <div class="container">
@@ -32,6 +33,25 @@
         <div id="custom-keyboard" class="keyboard keyboard--custom"></div>
         <p id="custom-hint" class="custom-hint" aria-live="polite"></p>
         <button id="custom-start-btn" class="btn btn--primary" disabled>開始玩</button>
+      </section>
+
+      <!-- 設定：主題／填色（切換即套用並記住） -->
+      <section class="settings" aria-label="設定">
+        <h3 class="custom-title">設定 ⚙️</h3>
+        <div class="setting-row">
+          <span class="setting-label">主題</span>
+          <div class="seg" id="theme-seg" role="group" aria-label="主題">
+            <button class="seg-btn" data-theme="playful">童趣</button>
+            <button class="seg-btn" data-theme="clean">清爽</button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <span class="setting-label">填色</span>
+          <div class="seg" id="fill-seg" role="group" aria-label="填色">
+            <button class="seg-btn" data-fill="mono">單色</button>
+            <button class="seg-btn" data-fill="letter">按字母變色</button>
+          </div>
+        </div>
       </section>
     </main>
 

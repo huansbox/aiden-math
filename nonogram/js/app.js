@@ -26,6 +26,7 @@ import {
   loadProgress,
   saveProgress,
 } from '../library.js';
+import { loadSettings, saveSettings } from '../settings.js';
 
 const els = {
   home: document.getElementById('home'),
@@ -36,6 +37,8 @@ const els = {
   customKeyboard: document.getElementById('custom-keyboard'),
   customHint: document.getElementById('custom-hint'),
   customStartBtn: document.getElementById('custom-start-btn'),
+  themeSeg: document.getElementById('theme-seg'),
+  fillSeg: document.getElementById('fill-seg'),
   puzzleLabel: document.getElementById('puzzle-label'),
   homeBtn: document.getElementById('home-btn'),
   allclearHomeBtn: document.getElementById('allclear-home-btn'),
@@ -58,6 +61,7 @@ const LETTER_COLORS = ['#e8554e', '#f5a623', '#3fb55f', '#2b8fd6', '#9b59b6', '#
 // ---- 狀態 ----
 let words = [];        // 題庫單字（已過濾為可玩）
 let solvedKeys = loadProgress(localStorage);
+let settings = loadSettings(localStorage); // { theme, fillMode }
 let currentIndex = -1; // 目前題目索引（-1 = 在首頁或自訂題）
 let isCustom = false;   // 目前是否在玩自訂題（不記過關、無「下一題」題庫序）
 let currentWord = '';
@@ -223,6 +227,8 @@ function renderGrid() {
       if (isLetterDivider(c)) cell.classList.add('cell--divider');
       cell.dataset.r = r;
       cell.dataset.c = c;
+      // 預先帶上該欄所屬字母的顏色：填色設為「按字母變色」時遊玩中即生效（CSS 控制）。
+      cell.style.setProperty('--letter-color', letterColor(letterIndexForCol(c)));
       els.grid.appendChild(cell);
     }
   }
@@ -437,6 +443,39 @@ els.customStartBtn.addEventListener('click', () => {
   refreshCustomState();
 });
 
+// ---- 設定（主題／填色）----
+// 套用到 <html> 的 data 屬性，CSS 以 :root[data-theme] / :root[data-fill] 覆寫，
+// 整個 app（首頁與遊戲）即時換樣；填色只影響遊玩中的格子，過關慶祝仍按字母上色。
+function applySettings() {
+  document.documentElement.dataset.theme = settings.theme;
+  document.documentElement.dataset.fill = settings.fillMode;
+  syncSegActive(els.themeSeg, 'theme', settings.theme);
+  syncSegActive(els.fillSeg, 'fill', settings.fillMode);
+}
+
+// 標出分段控制目前選中的按鈕（data-<key> 對應值者加 is-active）。
+function syncSegActive(seg, key, value) {
+  seg.querySelectorAll('.seg-btn').forEach((btn) => {
+    btn.classList.toggle('is-active', btn.dataset[key] === value);
+  });
+}
+
+els.themeSeg.addEventListener('click', (e) => {
+  const btn = e.target.closest('.seg-btn');
+  if (!btn) return;
+  settings = { ...settings, theme: btn.dataset.theme };
+  saveSettings(localStorage, settings);
+  applySettings();
+});
+
+els.fillSeg.addEventListener('click', (e) => {
+  const btn = e.target.closest('.seg-btn');
+  if (!btn) return;
+  settings = { ...settings, fillMode: btn.dataset.fill };
+  saveSettings(localStorage, settings);
+  applySettings();
+});
+
 // ---- 檢查 ----
 function clearHint() {
   els.hint.textContent = '';
@@ -533,6 +572,7 @@ els.allclearHomeBtn.addEventListener('click', showHome);
 
 // ---- 初始化：載入題庫 → 首頁 ----
 async function init() {
+  applySettings();
   renderKeyboard(els.keyboard);
   renderKeyboard(els.customKeyboard);
   refreshCustomState();
