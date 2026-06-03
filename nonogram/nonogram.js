@@ -7,12 +7,11 @@
 
 import { FONT } from './font.js';
 
-// 每個字母固定 5 列 × 3 欄；字母之間不留空白欄。
+// 每個字母固定 5 列；欄寬為比例字寬（3／4／5 欄，依字模而定），字母之間不留空白欄。
 export const LETTER_ROWS = 5;
-export const LETTER_COLS = 3;
 
 /**
- * 把單字攤平成 5 × (3·長度) 的布林點陣。
+ * 把單字攤平成 5 × (各字模欄寬總和) 的布林點陣。
  * @param {string} word 單字（大小寫不敏感）
  * @returns {{ word: string, rows: number, cols: number,
  *            cells: boolean[][], letterRanges: {char: string, start: number, width: number}[] }}
@@ -21,18 +20,24 @@ export function buildSolution(word) {
   const chars = [...String(word).toUpperCase()];
   if (chars.length === 0) throw new Error('buildSolution: 空字串無法生成謎題');
 
-  const letterRanges = chars.map((char, i) => {
-    if (!FONT[char]) throw new Error(`buildSolution: 缺少字模 "${char}"`);
-    return { char, start: i * LETTER_COLS, width: LETTER_COLS };
-  });
+  // 逐字累加左緣位置；欄寬取自各字模（同一字模各列等長）。
+  const letterRanges = [];
+  let start = 0;
+  for (const char of chars) {
+    const glyph = FONT[char];
+    if (!glyph) throw new Error(`buildSolution: 缺少字模 "${char}"`);
+    const width = glyph[0].length;
+    letterRanges.push({ char, start, width });
+    start += width;
+  }
 
-  const cols = chars.length * LETTER_COLS;
+  const cols = start;
   const cells = [];
   for (let r = 0; r < LETTER_ROWS; r++) {
     const row = [];
     for (const char of chars) {
       const glyphRow = FONT[char][r];
-      for (let c = 0; c < LETTER_COLS; c++) {
+      for (let c = 0; c < glyphRow.length; c++) {
         row.push(glyphRow[c] === '1');
       }
     }
@@ -40,6 +45,15 @@ export function buildSolution(word) {
   }
 
   return { word: chars.join(''), rows: LETTER_ROWS, cols, cells, letterRanges };
+}
+
+/**
+ * 由字母欄範圍算出要畫分隔線的欄索引（每個非首字母的左緣）。
+ * @param {{ start: number, width: number }[]} letterRanges buildSolution(...).letterRanges
+ * @returns {number[]} 需畫左側分隔線的欄索引（升冪）
+ */
+export function letterDividerCols(letterRanges) {
+  return letterRanges.slice(1).map((range) => range.start);
 }
 
 // 一條（行或列）布林序列 → 連續塗色段長度；全空回 [0]。
@@ -81,4 +95,20 @@ export function computeClues(cells) {
  */
 export function checkAnswer(typed, word) {
   return String(typed).trim().toUpperCase() === String(word).trim().toUpperCase();
+}
+
+/**
+ * 單字是否可生成謎題：直接試跑 buildSolution，能成功即可玩。
+ * 以 buildSolution 為單一事實來源（空字串、含 Q 或其他未收錄字元都會丟錯 → false），
+ * 避免「哪些字合法」的規則散成兩份而漂移（見 font.js「刻意不收錄 Q」）。
+ * @param {string} word
+ * @returns {boolean}
+ */
+export function isPlayable(word) {
+  try {
+    buildSolution(word);
+    return true;
+  } catch {
+    return false;
+  }
 }

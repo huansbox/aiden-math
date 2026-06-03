@@ -1,34 +1,142 @@
 /**
- * 數織解謎 — UI 渲染 + 互動（#2 最小可玩切片）。
+ * 數織解謎 — UI 渲染 + 互動（#5 題庫 + 首頁 + 過關紀錄）。
  *
- * 本切片用 hardcoded 題 AIDEN 證明整條管線走通：
- * font → 純函式 → 動態渲染 → 觸控塗色 → 螢幕鍵盤 → 檢查 → 過關。
- * 拖曳連續塗（#3）、鍵盤抽屜（#4）、題庫/首頁（#5）等留待後續切片。
+ * 純函式邏輯在 ../nonogram.js（攤平／提示／比對）與 ../library.js
+ * （題庫解析／過關紀錄／下一題），本檔只負責 DOM 與 localStorage。
+ *
+ * 流程：載入 wordlist → 首頁編號題庫（不顯示單字、標★）→ 點題進遊戲
+ * → 檢查打字答案 → 過關記到 localStorage → 「下一題」走題庫順序。
+ * 拖曳連續塗（#3）、看答案／填錯標示（#3）、鍵盤抽屜（#4）留待後續切片。
  */
 
-import { buildSolution, computeClues, checkAnswer, LETTER_COLS } from '../nonogram.js';
-
-const WORD = 'AIDEN'; // 取自 nonogram/wordlist.txt
+import { buildSolution, computeClues, checkAnswer, letterDividerCols } from '../nonogram.js';
+import {
+  parseWordlist,
+  isSolved,
+  markSolved,
+  nextUnsolvedIndex,
+  loadProgress,
+  saveProgress,
+} from '../library.js';
 
 const els = {
+  home: document.getElementById('home'),
+  game: document.getElementById('game'),
+  allclear: document.getElementById('allclear'),
+  library: document.getElementById('library'),
+  puzzleLabel: document.getElementById('puzzle-label'),
+  homeBtn: document.getElementById('home-btn'),
+  allclearHomeBtn: document.getElementById('allclear-home-btn'),
   colClues: document.getElementById('col-clues'),
   rowClues: document.getElementById('row-clues'),
   grid: document.getElementById('grid'),
   answer: document.getElementById('answer'),
   keyboard: document.getElementById('keyboard'),
   checkBtn: document.getElementById('check-btn'),
+  nextBtn: document.getElementById('next-btn'),
   hint: document.getElementById('hint'),
 };
 
-const solution = buildSolution(WORD);
-const clues = computeClues(solution.cells);
-
+// ---- 狀態 ----
+let words = [];        // 題庫單字（已過濾為可玩）
+let solvedKeys = loadProgress(localStorage);
+let currentIndex = -1; // 目前題目索引（-1 = 在首頁）
+let currentWord = '';
+let solution = null;
+let clues = null;
+let dividerCols = new Set();
 let typed = '';
+let solved = false;    // 本題是否已過關（過關後鎖定塗色/打字，避免畫面與「過關」訊息矛盾）
+
+// ---- 視圖切換（首頁／遊戲／全部過關，三選一）----
+function showView(name) {
+  els.home.hidden = name !== 'home';
+  els.game.hidden = name !== 'game';
+  els.allclear.hidden = name !== 'allclear';
+}
+
+// ---- 首頁：編號題庫 ----
+function showHome() {
+  currentIndex = -1;
+  renderLibrary();
+  showView('home');
+}
+
+// ---- 全部過關畫面 ----
+function showAllClear() {
+  currentIndex = -1;
+  showView('allclear');
+}
+
+// 在題庫區放一行訊息（載入中／載入失敗）。
+function showLibraryMessage(text) {
+  els.library.innerHTML = '';
+  const msg = document.createElement('p');
+  msg.className = 'library-msg';
+  msg.textContent = text;
+  els.library.appendChild(msg);
+}
+
+function renderLibrary() {
+  if (words.length === 0) {
+    showLibraryMessage('題庫載入失敗 😢 請重新整理頁面再試一次');
+    return;
+  }
+  els.library.innerHTML = '';
+  words.forEach((word, index) => {
+    const done = isSolved(solvedKeys, word);
+    const card = document.createElement('button');
+    card.className = 'puzzle-card';
+    card.dataset.index = index;
+    if (done) card.classList.add('is-solved');
+
+    const num = document.createElement('span');
+    num.className = 'puzzle-card__num';
+    num.textContent = `第 ${index + 1} 題`;
+    card.appendChild(num);
+
+    const star = document.createElement('span');
+    star.className = 'puzzle-card__star';
+    star.textContent = done ? '★' : '☆';
+    card.appendChild(star);
+
+    els.library.appendChild(card);
+  });
+}
+
+els.library.addEventListener('click', (e) => {
+  const card = e.target.closest('.puzzle-card');
+  if (!card) return;
+  loadPuzzle(Number(card.dataset.index));
+});
+
+// ---- 載入並開始一題 ----
+function loadPuzzle(index) {
+  if (index < 0 || index >= words.length) return;
+  currentIndex = index;
+  currentWord = words[index];
+  solution = buildSolution(currentWord);
+  clues = computeClues(solution.cells);
+  dividerCols = new Set(letterDividerCols(solution.letterRanges));
+  typed = '';
+  solved = false;
+
+  els.puzzleLabel.textContent = `第 ${index + 1} 題`;
+  els.nextBtn.hidden = true;
+  els.checkBtn.hidden = false;
+  clearHint();
+  renderColClues();
+  renderRowClues();
+  renderGrid();
+  renderAnswer();
+
+  showView('game');
+}
 
 // ---- 格盤渲染（欄列數一律由 JS 設定，非 CSS 寫死）----
-// 字母邊界＝每 LETTER_COLS 欄的左緣（col 3/6/9/12…），首欄不畫。
+// 字母為比例字寬，邊界由 letterRanges 推算（每個非首字母的左緣），不能假設固定間隔。
 function isLetterDivider(col) {
-  return col > 0 && col % LETTER_COLS === 0;
+  return dividerCols.has(col);
 }
 
 function renderColClues() {
@@ -84,6 +192,7 @@ function renderGrid() {
 
 // 點一下塗滿、再點一下取消（2 狀態）。拖曳連續塗留待 #3。
 els.grid.addEventListener('click', (e) => {
+  if (solved) return; // 過關後鎖定，避免改動格盤與「過關」狀態矛盾
   const cell = e.target.closest('.cell');
   if (!cell) return;
   cell.classList.toggle('filled');
@@ -92,7 +201,7 @@ els.grid.addEventListener('click', (e) => {
 // ---- 答案欄 + 螢幕鍵盤 ----
 function renderAnswer() {
   els.answer.innerHTML = '';
-  for (let i = 0; i < WORD.length; i++) {
+  for (let i = 0; i < currentWord.length; i++) {
     const slot = document.createElement('div');
     slot.className = 'slot';
     const ch = typed[i];
@@ -125,12 +234,13 @@ function renderKeyboard() {
 }
 
 els.keyboard.addEventListener('click', (e) => {
+  if (solved) return; // 過關後鎖定輸入
   const btn = e.target.closest('.key');
   if (!btn) return;
   const key = btn.dataset.key;
   if (key === 'DEL') {
     typed = typed.slice(0, -1);
-  } else if (typed.length < WORD.length) {
+  } else if (typed.length < currentWord.length) {
     typed += key;
   }
   clearHint();
@@ -144,10 +254,15 @@ function clearHint() {
 }
 
 els.checkBtn.addEventListener('click', () => {
-  if (checkAnswer(typed, WORD)) {
+  if (checkAnswer(typed, currentWord)) {
     els.hint.textContent = '🎉 答對了！過關！';
     els.hint.classList.remove('bad');
     els.hint.classList.add('ok');
+    solved = true;
+    solvedKeys = markSolved(solvedKeys, currentWord);
+    saveProgress(localStorage, solvedKeys);
+    els.checkBtn.hidden = true;
+    els.nextBtn.hidden = false;
   } else {
     els.hint.textContent = '再試試 💪';
     els.hint.classList.remove('ok');
@@ -155,10 +270,33 @@ els.checkBtn.addEventListener('click', () => {
   }
 });
 
-// ---- 初始化 ----
-renderColClues();
-renderRowClues();
-renderGrid();
-renderAnswer();
-renderKeyboard();
-clearHint();
+// ---- 下一題（跳到下一個未過關的題；全部過關則進全破畫面）----
+els.nextBtn.addEventListener('click', () => {
+  const next = nextUnsolvedIndex(solvedKeys, words, currentIndex);
+  if (next === null) {
+    showAllClear();
+  } else {
+    loadPuzzle(next);
+  }
+});
+
+els.homeBtn.addEventListener('click', showHome);
+els.allclearHomeBtn.addEventListener('click', showHome);
+
+// ---- 初始化：載入題庫 → 首頁 ----
+async function init() {
+  renderKeyboard();
+  // 先顯示首頁並標示載入中，避免 fetch 期間整頁空白。
+  showView('home');
+  showLibraryMessage('載入中⋯');
+  try {
+    const res = await fetch('wordlist.txt', { cache: 'no-store' });
+    if (!res.ok) throw new Error(`wordlist 載入失敗：HTTP ${res.status}`);
+    words = parseWordlist(await res.text());
+  } catch {
+    words = [];
+  }
+  showHome();
+}
+
+init();

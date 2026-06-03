@@ -14,6 +14,9 @@
 
 * { box-sizing: border-box; }
 
+/* 對使用 hidden 屬性的元素，CSS 有設 display 時必須覆寫（見 CLAUDE.md） */
+[hidden] { display: none !important; }
+
 html, body {
   margin: 0;
   padding: 0;
@@ -40,6 +43,77 @@ html, body {
   padding: 16px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, .25);
 }
+
+/* ---- 首頁：編號題庫 ---- */
+.home-title {
+  margin: 4px 0 16px;
+  text-align: center;
+  font-size: clamp(18px, 5vw, 24px);
+  font-weight: 900;
+}
+.library {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
+}
+.puzzle-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 92px;
+  padding: 14px 8px;
+  border: 2px solid var(--cell-line);
+  border-radius: 14px;
+  background: #f5f8ff;
+  color: var(--ink);
+  font-family: inherit;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.puzzle-card:active { transform: translateY(1px); }
+.puzzle-card.is-solved { border-color: var(--accent); background: #fff5ec; }
+.puzzle-card__num { font-size: clamp(15px, 4vw, 19px); font-weight: 900; }
+.puzzle-card__star {
+  font-size: clamp(22px, 6vw, 30px);
+  line-height: 1;
+  color: var(--cell-line);
+}
+.puzzle-card.is-solved .puzzle-card__star { color: var(--accent); }
+.library-msg {
+  grid-column: 1 / -1;
+  margin: 12px 0;
+  text-align: center;
+  font-size: clamp(14px, 3.8vw, 17px);
+  font-weight: 700;
+  color: var(--ink);
+  opacity: .8;
+}
+
+/* ---- 全部過關畫面 ---- */
+.allclear { text-align: center; padding: 32px 16px; }
+.allclear-emoji { font-size: clamp(56px, 18vw, 96px); line-height: 1; }
+.allclear-title {
+  margin: 12px 0 6px;
+  font-size: clamp(24px, 7vw, 36px);
+  font-weight: 900;
+}
+.allclear-sub {
+  margin: 0 0 22px;
+  font-size: clamp(14px, 4vw, 18px);
+  font-weight: 700;
+  opacity: .8;
+}
+
+/* ---- 遊戲頂部列：回題庫 + 第 N 題 ---- */
+.game-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.puzzle-label { font-size: clamp(15px, 4vw, 19px); font-weight: 900; }
 
 /* ---- 格盤：corner / col-clues / row-clues / grid ---- */
 .board {
@@ -168,7 +242,7 @@ html, body {
 }
 
 /* ---- 動作按鈕與提示 ---- */
-.actions { display: flex; justify-content: center; }
+.actions { display: flex; justify-content: center; gap: 12px; }
 .btn {
   border: none;
   border-radius: 12px;
@@ -180,6 +254,15 @@ html, body {
 }
 .btn--primary { background: var(--cell-fill); color: #fff; }
 .btn--primary:active { transform: translateY(1px); }
+.btn--accent { background: var(--accent); color: #fff; }
+.btn--accent:active { transform: translateY(1px); }
+.btn--ghost {
+  padding: 8px 16px;
+  font-size: clamp(14px, 3.8vw, 17px);
+  background: #eef2fb;
+  color: var(--ink);
+}
+.btn--ghost:active { transform: translateY(1px); }
 
 .hint {
   text-align: center;
