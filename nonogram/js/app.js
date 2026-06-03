@@ -6,7 +6,7 @@
  * 拖曳連續塗（#3）、鍵盤抽屜（#4）、題庫/首頁（#5）等留待後續切片。
  */
 
-import { buildSolution, computeClues, checkAnswer, LETTER_COLS } from '../nonogram.js';
+import { buildSolution, computeClues, checkAnswer, letterDividerCols } from '../nonogram.js';
 
 const WORD = 'AIDEN'; // 取自 nonogram/wordlist.txt
 
@@ -26,9 +26,10 @@ const clues = computeClues(solution.cells);
 let typed = '';
 
 // ---- 格盤渲染（欄列數一律由 JS 設定，非 CSS 寫死）----
-// 字母邊界＝每 LETTER_COLS 欄的左緣（col 3/6/9/12…），首欄不畫。
+// 字母為比例字寬，邊界由 letterRanges 推算（每個非首字母的左緣），不能假設固定間隔。
+const dividerCols = new Set(letterDividerCols(solution.letterRanges));
 function isLetterDivider(col) {
-  return col > 0 && col % LETTER_COLS === 0;
+  return dividerCols.has(col);
 }
 
 function renderColClues() {
