@@ -83,6 +83,8 @@ let typed = '';
 let revealed = false;
 // 鍵盤抽屜是否展開（#4）：影響格盤可用高度，開合時需重算 fitGrid。
 let drawerOpen = false;
+// 摸格子收鍵盤時，把「清底部留白 + 重算格盤」延後到拖曳結束，避免拖曳途中重排（見 grid pointerdown）。
+let pendingGridReflow = false;
 
 // ---- 視圖切換（首頁／遊戲／全部過關，三選一）----
 function showView(name) {
@@ -294,6 +296,7 @@ function openDrawer() {
 }
 function closeDrawer() {
   drawerOpen = false;
+  pendingGridReflow = false; // 此處已直接清留白＋重算，無須再延後
   els.kbDrawer.classList.remove('is-open');
   document.body.style.paddingBottom = '';
   fitGrid();
@@ -352,10 +355,17 @@ function cellAtPoint(x, y) {
 
 els.grid.addEventListener('pointerdown', (e) => {
   if (revealed) return; // 過關／看答案後鎖定，避免改動格盤與揭曉狀態矛盾
-  if (drawerOpen) closeDrawer(); // 摸格子即收回鍵盤（US 10），同一觸控仍照常塗這格
   const cell = e.target.closest('.cell');
   if (!cell) return;
   e.preventDefault();
+  // 摸格子即收回鍵盤（US 10）：先把抽屜滑走（純 transform、不重排），但延後清底部留白
+  // 與重算格盤到手指放開（endPaint）。否則拖曳途中版面重排＋格子縮小會讓格子在指下位移，
+  // 接下來以座標命中的 pointermove 就會塗到別格。
+  if (drawerOpen) {
+    drawerOpen = false;
+    els.kbDrawer.classList.remove('is-open');
+    pendingGridReflow = true;
+  }
   painting = true;
   paintMode = !cell.classList.contains('filled'); // 第一格決定塗/擦，整段沿用
   paintCell(cell);
@@ -370,6 +380,12 @@ els.grid.addEventListener('pointermove', (e) => {
 function endPaint() {
   painting = false;
   paintMode = null;
+  // 收鍵盤造成的版面重排延後到此（手指已放開），讓格盤長回滿版而不影響剛才的拖曳。
+  if (pendingGridReflow) {
+    pendingGridReflow = false;
+    document.body.style.paddingBottom = '';
+    fitGrid();
+  }
 }
 window.addEventListener('pointerup', endPaint);
 window.addEventListener('pointercancel', endPaint);
