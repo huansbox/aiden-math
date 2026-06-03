@@ -8,6 +8,17 @@
   <meta name="theme-color" content="#1b2a4a">
   <link rel="manifest" href="manifest.json">
   <title>數織解謎</title>
+  <!-- 先於 CSS 套用已存的主題/填色，避免清爽主題使用者載入時閃一下深色（FOUC）。
+       app.js 之後仍會以 applySettings 重新套用為權威值。 -->
+  <script>
+    try {
+      var s = JSON.parse(localStorage.getItem('nonogram:settings'));
+      if (s) {
+        if (s.theme === 'clean' || s.theme === 'playful') document.documentElement.dataset.theme = s.theme;
+        if (s.fillMode === 'mono' || s.fillMode === 'letter') document.documentElement.dataset.fill = s.fillMode;
+      }
+    } catch (e) { /* localStorage 不可用就用預設主題 */ }
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
