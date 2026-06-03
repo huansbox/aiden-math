@@ -419,23 +419,24 @@ html, body {
   min-width: clamp(48px, 14vw, 70px);
 }
 
-/* ---- 鍵盤抽屜（固定底部、滑出；#4）---- */
+/* ---- 鍵盤抽屜（緊接遊戲卡片下方、in-flow；#4）---- */
+/* 收合時 max-height:0 不佔空間；展開時往下長出、緊貼卡片，空白自然落到鍵盤下方
+   （而非夾在卡片與鍵盤之間）。box-sizing:border-box 讓 padding 收進 max-height，收合得乾淨。 */
 .kb-drawer {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 50;
+  box-sizing: border-box;
+  overflow: hidden;
+  max-height: 0;
+  padding: 0 12px;            /* 收合時無垂直 padding → 真正 0 高、不留 sliver */
+  transition: max-height .24s ease, margin-top .24s ease;
   background: var(--card);
-  border-top-left-radius: 18px;
-  border-top-right-radius: 18px;
-  box-shadow: 0 -8px 24px rgba(0, 0, 0, .28);
-  padding: 6px 12px calc(env(safe-area-inset-bottom) + 10px);
-  /* 預設收在畫面外，is-open 時滑出；110% 確保陰影也不外露 */
-  transform: translateY(110%);
-  transition: transform .22s ease;
+  border-radius: 18px;
 }
-.kb-drawer.is-open { transform: translateY(0); }
+.kb-drawer.is-open {
+  max-height: 70vh;
+  margin-top: 10px;
+  padding: 8px 12px 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .18);
+}
 .kb-drawer__bar {
   display: flex;
   align-items: center;

@@ -81,10 +81,8 @@ let typed = '';
 // 揭曉狀態（過關或看答案）：一旦揭曉就鎖定塗色／打字，避免畫面與揭曉結果矛盾。
 // 「不計過關」由「看答案時不呼叫 markSolved」直接保證，無需額外旗標。
 let revealed = false;
-// 鍵盤抽屜是否展開（#4）：影響格盤可用高度，開合時需重算 fitGrid。
+// 鍵盤抽屜是否展開（#4）：摸格子即收回（見 grid pointerdown）。
 let drawerOpen = false;
-// 摸格子收鍵盤時，把「清底部留白 + 重算格盤」延後到拖曳結束，避免拖曳途中重排（見 grid pointerdown）。
-let pendingGridReflow = false;
 
 // ---- 視圖切換（首頁／遊戲／全部過關，三選一）----
 function showView(name) {
@@ -166,10 +164,9 @@ function startPuzzle(word, label) {
   els.replayBtn.hidden = true;
   els.nextBtn.hidden = true;
   clearHint();
-  // 每題從「鍵盤收起」開始（fitGrid 在下方依此算出滿版格盤）。
+  // 每題從「鍵盤收起」開始。
   drawerOpen = false;
   els.kbDrawer.classList.remove('is-open');
-  document.body.style.paddingBottom = '';
   renderColClues();
   renderRowClues();
   renderGrid();
@@ -253,60 +250,42 @@ function renderGrid() {
   }
 }
 
-// 格盤動態縮放：取「寬度可塞」與「高度可塞」的較小格寬，讓整片格盤永遠完整可見、
-// 不被鍵盤抽屜遮蓋（#4）。提示帶尺寸一律實測（row-clues 寬、col-clues 高），
-// 不硬編固定 px，否則多位數提示會把格子夾到極小（見 PRD「格盤尺寸動態計算」）。
-// 改動 padding（抽屜開合）後以 requestAnimationFrame 重算，待版面落定再量。
+// 格盤填滿卡片可用寬度：欄寬由 JS 算（CSS 不寫死），row-clues 寬度為內容驅動（提示位數），
+// 一律實測再扣掉，避免硬編固定 px 把多位數提示的格子夾到極小（見 PRD「格盤尺寸動態計算」）。
+// 鍵盤抽屜為卡片下方 in-flow 區塊，開合不影響格盤寬度，故格寬只取決於寬度。
 function fitGrid() {
   if (!solution) return;
   requestAnimationFrame(() => {
     if (!solution) return;
-    const gridBorder = 4; // .grid 上下左右各 2px
-
-    // 寬度約束：卡片內寬扣掉 row-clues（實測）後均分給各欄。
+    const gridBorder = 4; // .grid 左右各 2px
     const cs = getComputedStyle(els.game);
     const padX = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);
     const cardInner = els.game.clientWidth - padX;
     const rowCluesW = els.rowClues.offsetWidth;
-    const cellByW = Math.floor((cardInner - rowCluesW - gridBorder) / solution.cols);
-
-    // 高度約束：視窗高 − 格盤上方（標題列等）− 格盤下方需保留可見的內容（答案/按鈕/提示）
-    //           −（抽屜展開時）抽屜高 − col-clues（實測）。這些量都與格寬無關，無循環依賴。
-    const boardTop = els.board.getBoundingClientRect().top;
-    const belowH = els.answer.offsetHeight + els.actions.offsetHeight + els.hint.offsetHeight + 56;
-    const drawerH = drawerOpen ? els.kbDrawer.offsetHeight : 0;
-    const colCluesH = els.colClues.offsetHeight;
-    const availH = window.innerHeight - boardTop - belowH - drawerH - 12;
-    const cellByH = Math.floor((availH - colCluesH - gridBorder) / solution.rows);
-
-    let cell = Math.min(cellByW, cellByH);
+    let cell = Math.floor((cardInner - rowCluesW - gridBorder) / solution.cols);
     cell = Math.max(14, Math.min(cell, 56)); // 下限好點、上限不過胖
     els.board.style.setProperty('--cell', `${cell}px`);
   });
 }
 
 // ---- 鍵盤抽屜開合 ----
-// 開啟：滑出抽屜、撐開 body 底部留白（讓內容可上推/捲動不被蓋）、重算格盤縮小讓位。
+// 抽屜是「緊接遊戲卡片下方」的 in-flow 區塊（CSS .kb-drawer 用 max-height 滑開），
+// 開啟時往下長出、貼著卡片，內容不被遮蓋、卡片與鍵盤間無死空白（空白落在鍵盤下方）。
 function openDrawer() {
   if (revealed) return; // 揭曉後鍵盤已鎖定，不再叫出
   drawerOpen = true;
   els.kbDrawer.classList.add('is-open');
-  document.body.style.paddingBottom = `${els.kbDrawer.offsetHeight}px`;
-  fitGrid();
+  // 矮螢幕下鍵盤可能在摺線下，捲到可見（已展開的高度，故延後到 transition 後）。
+  setTimeout(() => els.kbDrawer.scrollIntoView({ behavior: 'smooth', block: 'end' }), 260);
 }
 function closeDrawer() {
   drawerOpen = false;
-  pendingGridReflow = false; // 此處已直接清留白＋重算，無須再延後
   els.kbDrawer.classList.remove('is-open');
-  document.body.style.paddingBottom = '';
-  fitGrid();
 }
 
-// 視窗縮放／轉向時重算格寬（僅在遊戲畫面）；抽屜開著時一併校正底部留白（轉向後抽屜高會變）。
+// 視窗縮放／轉向時重算格寬（僅在遊戲畫面）。
 window.addEventListener('resize', () => {
-  if (els.game.hidden) return;
-  if (drawerOpen) document.body.style.paddingBottom = `${els.kbDrawer.offsetHeight}px`;
-  fitGrid();
+  if (!els.game.hidden) fitGrid();
 });
 
 // ---- 按字母上色：依欄索引找出所屬字母序，回傳對應顏色 ----
@@ -358,14 +337,8 @@ els.grid.addEventListener('pointerdown', (e) => {
   const cell = e.target.closest('.cell');
   if (!cell) return;
   e.preventDefault();
-  // 摸格子即收回鍵盤（US 10）：先把抽屜滑走（純 transform、不重排），但延後清底部留白
-  // 與重算格盤到手指放開（endPaint）。否則拖曳途中版面重排＋格子縮小會讓格子在指下位移，
-  // 接下來以座標命中的 pointermove 就會塗到別格。
-  if (drawerOpen) {
-    drawerOpen = false;
-    els.kbDrawer.classList.remove('is-open');
-    pendingGridReflow = true;
-  }
+  // 摸格子即收回鍵盤（US 10）。鍵盤在格盤下方收合、不會動到格盤，故同一觸控仍照常塗這格。
+  if (drawerOpen) closeDrawer();
   painting = true;
   paintMode = !cell.classList.contains('filled'); // 第一格決定塗/擦，整段沿用
   paintCell(cell);
@@ -380,12 +353,6 @@ els.grid.addEventListener('pointermove', (e) => {
 function endPaint() {
   painting = false;
   paintMode = null;
-  // 收鍵盤造成的版面重排延後到此（手指已放開），讓格盤長回滿版而不影響剛才的拖曳。
-  if (pendingGridReflow) {
-    pendingGridReflow = false;
-    document.body.style.paddingBottom = '';
-    fitGrid();
-  }
 }
 window.addEventListener('pointerup', endPaint);
 window.addEventListener('pointercancel', endPaint);
