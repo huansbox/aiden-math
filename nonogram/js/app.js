@@ -1,15 +1,22 @@
 /**
- * 數織解謎 — UI 渲染 + 互動（#5 題庫 + 首頁 + 過關紀錄）。
+ * 數織解謎 — UI 渲染 + 互動（#5 題庫 + 首頁 + 過關紀錄、#3 拖曳塗色 + 過關呈現）。
  *
- * 純函式邏輯在 ../nonogram.js（攤平／提示／比對）與 ../library.js
+ * 純函式邏輯在 ../nonogram.js（攤平／提示／比對／填錯）與 ../library.js
  * （題庫解析／過關紀錄／下一題），本檔只負責 DOM 與 localStorage。
  *
  * 流程：載入 wordlist → 首頁編號題庫（不顯示單字、標★）→ 點題進遊戲
- * → 檢查打字答案 → 過關記到 localStorage → 「下一題」走題庫順序。
- * 拖曳連續塗（#3）、看答案／填錯標示（#3）、鍵盤抽屜（#4）留待後續切片。
+ * → 拖曳連續塗格 → 檢查打字答案 → 過關標出多塗/漏塗並按字母上色
+ * → 過關記到 localStorage →「下一題」走題庫順序。卡關可「看答案」（不計過關）。
+ * 鍵盤抽屜（#4）留待後續切片。
  */
 
-import { buildSolution, computeClues, checkAnswer, letterDividerCols } from '../nonogram.js';
+import {
+  buildSolution,
+  computeClues,
+  checkAnswer,
+  diffCells,
+  letterDividerCols,
+} from '../nonogram.js';
 import {
   parseWordlist,
   isSolved,
@@ -27,15 +34,21 @@ const els = {
   puzzleLabel: document.getElementById('puzzle-label'),
   homeBtn: document.getElementById('home-btn'),
   allclearHomeBtn: document.getElementById('allclear-home-btn'),
+  board: document.getElementById('board'),
   colClues: document.getElementById('col-clues'),
   rowClues: document.getElementById('row-clues'),
   grid: document.getElementById('grid'),
   answer: document.getElementById('answer'),
   keyboard: document.getElementById('keyboard'),
   checkBtn: document.getElementById('check-btn'),
+  revealBtn: document.getElementById('reveal-btn'),
+  replayBtn: document.getElementById('replay-btn'),
   nextBtn: document.getElementById('next-btn'),
   hint: document.getElementById('hint'),
 };
+
+// 過關／看答案時按字母上色用的調色盤（依字母序循環）。
+const LETTER_COLORS = ['#e8554e', '#f5a623', '#3fb55f', '#2b8fd6', '#9b59b6', '#e07ec0'];
 
 // ---- 狀態 ----
 let words = [];        // 題庫單字（已過濾為可玩）
@@ -46,7 +59,9 @@ let solution = null;
 let clues = null;
 let dividerCols = new Set();
 let typed = '';
-let solved = false;    // 本題是否已過關（過關後鎖定塗色/打字，避免畫面與「過關」訊息矛盾）
+// 揭曉狀態（過關或看答案）：一旦揭曉就鎖定塗色／打字，避免畫面與揭曉結果矛盾。
+// 「不計過關」由「看答案時不呼叫 markSolved」直接保證，無需額外旗標。
+let revealed = false;
 
 // ---- 視圖切換（首頁／遊戲／全部過關，三選一）----
 function showView(name) {
@@ -119,16 +134,19 @@ function loadPuzzle(index) {
   clues = computeClues(solution.cells);
   dividerCols = new Set(letterDividerCols(solution.letterRanges));
   typed = '';
-  solved = false;
+  revealed = false;
 
   els.puzzleLabel.textContent = `第 ${index + 1} 題`;
-  els.nextBtn.hidden = true;
   els.checkBtn.hidden = false;
+  els.revealBtn.hidden = false;
+  els.replayBtn.hidden = true;
+  els.nextBtn.hidden = true;
   clearHint();
   renderColClues();
   renderRowClues();
   renderGrid();
   renderAnswer();
+  fitGrid();
 
   showView('game');
 }
@@ -190,13 +208,95 @@ function renderGrid() {
   }
 }
 
-// 點一下塗滿、再點一下取消（2 狀態）。拖曳連續塗留待 #3。
-els.grid.addEventListener('click', (e) => {
-  if (solved) return; // 過關後鎖定，避免改動格盤與「過關」狀態矛盾
+// 格盤填滿 layout 可用寬度：欄寬一律由 JS 算（CSS 不寫死），避免大塊留白／格子過小。
+// row-clues 寬度為內容驅動（提示位數），實測它再扣掉，避免硬編固定 px（見 PRD）。
+function fitGrid() {
+  if (!solution) return;
+  requestAnimationFrame(() => {
+    if (!solution) return;
+    const cs = getComputedStyle(els.game);
+    const padX = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);
+    const cardInner = els.game.clientWidth - padX;
+    const rowCluesW = els.rowClues.offsetWidth;
+    const gridBorder = 4; // .grid 左右各 2px
+    const avail = cardInner - rowCluesW - gridBorder;
+    let cell = Math.floor(avail / solution.cols);
+    cell = Math.max(14, Math.min(cell, 56)); // 下限好點、上限不過胖
+    els.board.style.setProperty('--cell', `${cell}px`);
+  });
+}
+
+// 視窗縮放／轉向時重算格寬（僅在遊戲畫面）。
+window.addEventListener('resize', () => {
+  if (!els.game.hidden) fitGrid();
+});
+
+// ---- 按字母上色：依欄索引找出所屬字母序，回傳對應顏色 ----
+function letterIndexForCol(col) {
+  const ranges = solution.letterRanges;
+  for (let i = 0; i < ranges.length; i++) {
+    if (col >= ranges[i].start && col < ranges[i].start + ranges[i].width) return i;
+  }
+  return 0;
+}
+function letterColor(letterIndex) {
+  return LETTER_COLORS[letterIndex % LETTER_COLORS.length];
+}
+
+// 讀出目前格盤塗色狀態為二維布林陣列（供 diffCells 比對）。
+function readFilled() {
+  const filled = [];
+  for (let r = 0; r < solution.rows; r++) {
+    const row = [];
+    for (let c = 0; c < solution.cols; c++) row.push(false);
+    filled.push(row);
+  }
+  els.grid.querySelectorAll('.cell.filled').forEach((cell) => {
+    filled[Number(cell.dataset.r)][Number(cell.dataset.c)] = true;
+  });
+  return filled;
+}
+
+// ---- 拖曳連續塗 ----
+// pointerdown 由第一格現況決定本次「塗」或「擦」並鎖定；pointermove 以
+// document.elementFromPoint 命中格子（觸控有隱式指標捕捉，不能用 e.target）。
+let painting = false;
+let paintMode = null; // true = 塗、false = 擦
+
+function paintCell(cell) {
+  if (!cell) return;
+  cell.classList.toggle('filled', paintMode);
+}
+
+function cellAtPoint(x, y) {
+  const el = document.elementFromPoint(x, y);
+  if (!el) return null;
+  const cell = el.closest('.cell');
+  return cell && els.grid.contains(cell) ? cell : null;
+}
+
+els.grid.addEventListener('pointerdown', (e) => {
+  if (revealed) return; // 過關／看答案後鎖定，避免改動格盤與揭曉狀態矛盾
   const cell = e.target.closest('.cell');
   if (!cell) return;
-  cell.classList.toggle('filled');
+  e.preventDefault();
+  painting = true;
+  paintMode = !cell.classList.contains('filled'); // 第一格決定塗/擦，整段沿用
+  paintCell(cell);
 });
+
+els.grid.addEventListener('pointermove', (e) => {
+  if (!painting) return;
+  e.preventDefault();
+  paintCell(cellAtPoint(e.clientX, e.clientY));
+});
+
+function endPaint() {
+  painting = false;
+  paintMode = null;
+}
+window.addEventListener('pointerup', endPaint);
+window.addEventListener('pointercancel', endPaint);
 
 // ---- 答案欄 + 螢幕鍵盤 ----
 function renderAnswer() {
@@ -204,6 +304,14 @@ function renderAnswer() {
   for (let i = 0; i < currentWord.length; i++) {
     const slot = document.createElement('div');
     slot.className = 'slot';
+    if (revealed) {
+      // 揭曉時整字按字母上色（過關慶祝／看答案皆然）
+      slot.textContent = currentWord[i];
+      slot.classList.add('revealed');
+      slot.style.setProperty('--letter-color', letterColor(i));
+      els.answer.appendChild(slot);
+      continue;
+    }
     const ch = typed[i];
     if (ch) {
       slot.textContent = ch;
@@ -234,7 +342,7 @@ function renderKeyboard() {
 }
 
 els.keyboard.addEventListener('click', (e) => {
-  if (solved) return; // 過關後鎖定輸入
+  if (revealed) return; // 過關／看答案後鎖定輸入
   const btn = e.target.closest('.key');
   if (!btn) return;
   const key = btn.dataset.key;
@@ -253,15 +361,46 @@ function clearHint() {
   els.hint.classList.remove('ok', 'bad');
 }
 
+// ---- 揭曉格盤：按字母上色正解，並（可選）疊加多塗/漏塗記號 ----
+// withDiff 為真時先讀玩家塗色比對，再清盤重畫；過關走比對、看答案不比對。
+function revealBoard(withDiff) {
+  const diff = withDiff ? diffCells(readFilled(), solution) : { extra: [], missing: [] };
+  const extraSet = new Set(diff.extra.map((p) => `${p.r},${p.c}`));
+  const missingSet = new Set(diff.missing.map((p) => `${p.r},${p.c}`));
+
+  els.grid.querySelectorAll('.cell').forEach((cell) => {
+    const r = Number(cell.dataset.r);
+    const c = Number(cell.dataset.c);
+    const key = `${r},${c}`;
+    cell.classList.remove('filled', 'diff-extra', 'diff-missing', 'revealed');
+    cell.style.removeProperty('--letter-color');
+
+    if (solution.cells[r][c]) {
+      // 正解塗色格 → 揭曉並按字母上色；玩家漏塗的標記出來
+      cell.classList.add('revealed');
+      cell.style.setProperty('--letter-color', letterColor(letterIndexForCol(c)));
+      if (missingSet.has(key)) cell.classList.add('diff-missing');
+    } else if (extraSet.has(key)) {
+      // 正解不塗、玩家卻塗了 → 標記多塗
+      cell.classList.add('diff-extra');
+    }
+  });
+
+  revealed = true;
+  renderAnswer(); // 答案欄也按字母上色
+}
+
 els.checkBtn.addEventListener('click', () => {
   if (checkAnswer(typed, currentWord)) {
     els.hint.textContent = '🎉 答對了！過關！';
     els.hint.classList.remove('bad');
     els.hint.classList.add('ok');
-    solved = true;
     solvedKeys = markSolved(solvedKeys, currentWord);
     saveProgress(localStorage, solvedKeys);
+    revealBoard(true); // 過關：上色正解 + 標出多塗/漏塗
     els.checkBtn.hidden = true;
+    els.revealBtn.hidden = true;
+    els.replayBtn.hidden = false;
     els.nextBtn.hidden = false;
   } else {
     els.hint.textContent = '再試試 💪';
@@ -270,13 +409,36 @@ els.checkBtn.addEventListener('click', () => {
   }
 });
 
-// ---- 下一題（跳到下一個未過關的題；全部過關則進全破畫面）----
+// ---- 看答案：揭曉正解點陣（不比對填錯），標記「已看答案」、不計過關 ----
+els.revealBtn.addEventListener('click', () => {
+  if (revealed) return;
+  revealBoard(false);
+  els.hint.textContent = '已看答案（這題不算過關）';
+  els.hint.classList.remove('ok', 'bad');
+  els.checkBtn.hidden = true;
+  els.revealBtn.hidden = true;
+  els.replayBtn.hidden = false; // 可重玩
+  els.nextBtn.hidden = false;    // 或下一題
+});
+
+// ---- 重玩：重新載入同一題（清空塗色與答案）----
+els.replayBtn.addEventListener('click', () => {
+  if (currentIndex >= 0) loadPuzzle(currentIndex);
+});
+
+// ---- 下一題（跳到下一個未過關的題；全部過關才進全破畫面）----
+// nextUnsolvedIndex 不含 current，回 null 代表「沒有其他未過關題」。此時要再分辨：
+//   - 這題自己也真的過關了 → 整個題庫都破完 → 全部過關畫面。
+//   - 這題還沒過關（剛按過「看答案」，不計過關）→ 唯一未破的就是這題，不可誤判全破；
+//     跳到下一個編號讓孩子繼續玩／重玩（看答案另有「重玩」可回到本題）。
 els.nextBtn.addEventListener('click', () => {
   const next = nextUnsolvedIndex(solvedKeys, words, currentIndex);
-  if (next === null) {
+  if (next !== null) {
+    loadPuzzle(next);
+  } else if (isSolved(solvedKeys, currentWord)) {
     showAllClear();
   } else {
-    loadPuzzle(next);
+    loadPuzzle((currentIndex + 1) % words.length);
   }
 });
 

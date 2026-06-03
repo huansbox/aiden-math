@@ -3,6 +3,7 @@ import {
   buildSolution,
   computeClues,
   checkAnswer,
+  diffCells,
   letterDividerCols,
   isPlayable,
   LETTER_ROWS,
@@ -166,6 +167,86 @@ describe('checkAnswer', () => {
 
   it('空輸入回 false', () => {
     expect(checkAnswer('', 'AIDEN')).toBe(false);
+  });
+});
+
+describe('diffCells', () => {
+  // 小型自製解答便於逐格驗證（2×3，左上、右下塗色）
+  const solution = {
+    rows: 2,
+    cols: 3,
+    cells: [
+      [true, false, false],
+      [false, false, true],
+    ],
+  };
+
+  it('完全正確時 extra/missing 皆為空', () => {
+    const filled = [
+      [true, false, false],
+      [false, false, true],
+    ];
+    expect(diffCells(filled, solution)).toEqual({ extra: [], missing: [] });
+  });
+
+  it('多塗（extra）= 有塗但解答不該塗', () => {
+    const filled = [
+      [true, true, false], // (0,1) 多塗
+      [false, false, true],
+    ];
+    expect(diffCells(filled, solution)).toEqual({
+      extra: [{ r: 0, c: 1 }],
+      missing: [],
+    });
+  });
+
+  it('漏塗（missing）= 解答該塗但沒塗', () => {
+    const filled = [
+      [true, false, false],
+      [false, false, false], // (1,2) 漏塗
+    ];
+    expect(diffCells(filled, solution)).toEqual({
+      extra: [],
+      missing: [{ r: 1, c: 2 }],
+    });
+  });
+
+  it('同時有多塗與漏塗，皆以列優先（row-major）排序回傳', () => {
+    const filled = [
+      [false, true, false], // (0,0) 漏塗、(0,1) 多塗
+      [false, false, false], // (1,2) 漏塗
+    ];
+    expect(diffCells(filled, solution)).toEqual({
+      extra: [{ r: 0, c: 1 }],
+      missing: [{ r: 0, c: 0 }, { r: 1, c: 2 }],
+    });
+  });
+
+  it('全空格盤：解答所有塗色格皆列為漏塗、無多塗', () => {
+    const filled = [
+      [false, false, false],
+      [false, false, false],
+    ];
+    expect(diffCells(filled, solution)).toEqual({
+      extra: [],
+      missing: [{ r: 0, c: 0 }, { r: 1, c: 2 }],
+    });
+  });
+
+  it('容忍稀疏 / 缺列的 filled（未塗格視為 false）', () => {
+    // filled 只給第 0 列，第 1 列整列缺省
+    const filled = [[true]];
+    expect(diffCells(filled, solution)).toEqual({
+      extra: [],
+      missing: [{ r: 1, c: 2 }],
+    });
+  });
+
+  it('套在真實題目（AIDEN）：完全照解答塗 → 無差異', () => {
+    const sol = buildSolution('AIDEN');
+    const { extra, missing } = diffCells(sol.cells, sol);
+    expect(extra).toEqual([]);
+    expect(missing).toEqual([]);
   });
 });
 
