@@ -1,8 +1,10 @@
 :root {
+  /* 童趣（預設）：深藍漸層底 + 白卡片 + 暖橘點綴 */
   --bg-top: #243b6b;
   --bg-bottom: #1b2a4a;
   --card: #ffffff;
   --ink: #20304f;
+  --header-ink: #ffffff;
   --cell-line: #9fb0cc;
   --cell-fill: #2b59c3;
   --divider: #20304f;
@@ -10,6 +12,19 @@
   /* 格子尺寸由此控制；AIDEN = 15 欄，需在窄螢幕也塞得下 */
   --cell: clamp(16px, 5.2vw, 34px);
   --clue-font: clamp(10px, 2.6vw, 16px);
+}
+
+/* 清爽主題：淺色底 + 柔和藍綠，整個 app 即時換樣（見 app.js applySettings） */
+:root[data-theme="clean"] {
+  --bg-top: #eef3f8;
+  --bg-bottom: #dbe5ef;
+  --card: #ffffff;
+  --ink: #2b3a52;
+  --header-ink: #2b3a52;
+  --cell-line: #c3cede;
+  --cell-fill: #4a83b8;
+  --divider: #3a4d66;
+  --accent: #f0a14b;
 }
 
 * { box-sizing: border-box; }
@@ -33,7 +48,7 @@ html, body {
   padding: env(safe-area-inset-top) 12px calc(env(safe-area-inset-bottom) + 12px);
 }
 
-.header { text-align: center; color: #fff; padding: 14px 0 8px; }
+.header { text-align: center; color: var(--header-ink); padding: 14px 0 8px; }
 .title { margin: 0; font-size: clamp(22px, 6vw, 34px); font-weight: 900; }
 .subtitle { margin: 4px 0 0; font-size: clamp(12px, 3.2vw, 16px); opacity: .85; }
 
@@ -90,6 +105,124 @@ html, body {
   color: var(--ink);
   opacity: .8;
 }
+
+/* ---- 首頁：自訂出題 ---- */
+.custom {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 2px dashed var(--cell-line);
+  text-align: center;
+}
+.custom-title { margin: 0 0 2px; font-size: clamp(16px, 4.6vw, 21px); font-weight: 900; }
+.custom-sub { margin: 0 0 12px; font-size: clamp(12px, 3.2vw, 15px); font-weight: 700; opacity: .75; }
+.custom-display {
+  min-height: 56px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+  padding: 8px;
+  border: 2px solid var(--cell-line);
+  border-radius: 12px;
+  background: #f5f8ff;
+}
+.custom-chip {
+  min-width: clamp(28px, 8vw, 40px);
+  height: clamp(38px, 11vw, 48px);
+  padding: 0 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  background: var(--cell-fill);
+  color: #fff;
+  font-size: clamp(18px, 5.4vw, 26px);
+  font-weight: 900;
+}
+.custom-placeholder {
+  font-size: clamp(13px, 3.6vw, 16px);
+  font-weight: 700;
+  color: var(--cell-line);
+}
+.keyboard--custom { margin-bottom: 10px; }
+.custom-hint {
+  margin: 0 0 12px;
+  min-height: 1.4em;
+  font-size: clamp(13px, 3.6vw, 16px);
+  font-weight: 700;
+}
+.custom-hint.bad { color: #d14343; }
+
+/* ---- 首頁：設定（齒輪鈕 + 浮層，省主畫面空間）---- */
+.home { position: relative; }
+.settings-toggle {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 6;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--cell-line);
+  border-radius: 50%;
+  background: #f5f8ff;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.settings-toggle:active { transform: translateY(1px); }
+.settings {
+  position: absolute;
+  top: 58px;
+  right: 12px;
+  left: auto;
+  z-index: 5;
+  width: max-content;
+  max-width: calc(100% - 24px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  border: 2px solid var(--cell-line);
+  border-radius: 14px;
+  background: var(--card);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, .25);
+  text-align: left;
+}
+.setting-row {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+}
+.setting-label { font-size: clamp(14px, 4vw, 17px); font-weight: 900; }
+.seg {
+  display: flex;
+  border: 2px solid var(--cell-line);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #f5f8ff;
+}
+.seg-btn {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 9px 16px;
+  white-space: nowrap;
+  font-family: inherit;
+  font-size: clamp(13px, 3.6vw, 16px);
+  font-weight: 700;
+  color: var(--ink);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.seg-btn + .seg-btn { border-left: 2px solid var(--cell-line); }
+.seg-btn.is-active { background: var(--cell-fill); color: #fff; }
 
 /* ---- 全部過關畫面 ---- */
 .allclear { text-align: center; padding: 32px 16px; }
@@ -187,6 +320,8 @@ html, body {
   cursor: pointer;
 }
 .cell.filled { background: var(--cell-fill); }
+/* 填色設為「按字母變色」時，遊玩中的塗色格即依所屬字母上色（--letter-color 由 JS 預設） */
+:root[data-fill="letter"] .cell.filled { background: var(--letter-color, var(--cell-fill)); }
 
 /* ---- 過關／看答案揭曉：按字母上色 + 標出多塗(extra)/漏塗(missing) ---- */
 .cell.revealed {
@@ -295,6 +430,8 @@ html, body {
 }
 .btn--primary { background: var(--cell-fill); color: #fff; }
 .btn--primary:active { transform: translateY(1px); }
+.btn:disabled { opacity: .4; cursor: default; }
+.btn:disabled:active { transform: none; }
 .btn--accent { background: var(--accent); color: #fff; }
 .btn--accent:active { transform: translateY(1px); }
 .btn--ghost {
