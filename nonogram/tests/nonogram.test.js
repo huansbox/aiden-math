@@ -4,6 +4,7 @@ import {
   computeClues,
   checkAnswer,
   letterDividerCols,
+  isPlayable,
   LETTER_ROWS,
 } from '../nonogram.js';
 import { FONT } from '../font.js';
@@ -157,5 +158,22 @@ describe('checkAnswer', () => {
 
   it('空輸入回 false', () => {
     expect(checkAnswer('', 'AIDEN')).toBe(false);
+  });
+});
+
+describe('isPlayable', () => {
+  it('字模齊全的字回 true（含大小寫、多字寬）', () => {
+    expect(isPlayable('AIDEN')).toBe(true);
+    expect(isPlayable('moya')).toBe(true);
+  });
+
+  it('含未收錄字模（Q）回 false', () => {
+    expect(isPlayable('Q')).toBe(false);
+    expect(isPlayable('QUIZ')).toBe(false);
+  });
+
+  it('空字串／標點回 false', () => {
+    expect(isPlayable('')).toBe(false);
+    expect(isPlayable('SO!TO')).toBe(false);
   });
 });

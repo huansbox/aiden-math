@@ -96,3 +96,19 @@ export function computeClues(cells) {
 export function checkAnswer(typed, word) {
   return String(typed).trim().toUpperCase() === String(word).trim().toUpperCase();
 }
+
+/**
+ * 單字是否可生成謎題：直接試跑 buildSolution，能成功即可玩。
+ * 以 buildSolution 為單一事實來源（空字串、含 Q 或其他未收錄字元都會丟錯 → false），
+ * 避免「哪些字合法」的規則散成兩份而漂移（見 font.js「刻意不收錄 Q」）。
+ * @param {string} word
+ * @returns {boolean}
+ */
+export function isPlayable(word) {
+  try {
+    buildSolution(word);
+    return true;
+  } catch {
+    return false;
+  }
+}

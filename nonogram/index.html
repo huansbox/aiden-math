@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=20260603b">
+  <link rel="stylesheet" href="css/style.css?v=20260603d">
 </head>
 <body>
   <div class="container">
@@ -19,7 +19,19 @@
       <p class="subtitle">看提示塗格子，猜出隱藏的單字！</p>
     </header>
 
-    <main class="card">
+    <!-- 首頁：編號題庫（不顯示單字以免劇透） -->
+    <main id="home" class="card home" hidden>
+      <h2 class="home-title">選一題開始玩</h2>
+      <div id="library" class="library" aria-label="題庫"></div>
+    </main>
+
+    <!-- 遊戲畫面 -->
+    <main id="game" class="card" hidden>
+      <div class="game-top">
+        <button id="home-btn" class="btn btn--ghost">← 題庫</button>
+        <span id="puzzle-label" class="puzzle-label"></span>
+      </div>
+
       <!-- 格盤：四宮格 = 角落 / 上方列提示 / 左側行提示 / 格盤本體 -->
       <div id="board" class="board">
         <div class="board-corner"></div>
@@ -36,9 +48,10 @@
 
       <div class="actions">
         <button id="check-btn" class="btn btn--primary">檢查</button>
+        <button id="next-btn" class="btn btn--accent" hidden>下一題 →</button>
       </div>
 
-      <p id="hint" class="hint">載入中⋯</p>
+      <p id="hint" class="hint"></p>
     </main>
   </div>
 
