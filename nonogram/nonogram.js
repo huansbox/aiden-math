@@ -98,6 +98,35 @@ export function checkAnswer(typed, word) {
 }
 
 /**
+ * 比對玩家塗色與正解，回傳「多塗」「漏塗」的格座標（過關後標示用）。
+ *
+ * - extra（多塗）：玩家塗了、但正解不該塗的格。
+ * - missing（漏塗）：正解該塗、但玩家沒塗的格。
+ * 兩串皆以列優先（row-major）排序；完全正確時兩者皆為空陣列。
+ * `filled` 可為稀疏／缺列的二維陣列，缺省格一律視為未塗（false）。
+ *
+ * @param {boolean[][]} filled 玩家塗色（filled[r][c] 為真表示已塗）
+ * @param {{ cells: boolean[][] }} solution buildSolution(...) 的解答
+ * @returns {{ extra: {r: number, c: number}[], missing: {r: number, c: number}[] }}
+ */
+export function diffCells(filled, solution) {
+  const sol = solution.cells;
+  const extra = [];
+  const missing = [];
+  for (let r = 0; r < sol.length; r++) {
+    const solRow = sol[r];
+    const filledRow = (filled && filled[r]) || [];
+    for (let c = 0; c < solRow.length; c++) {
+      const shouldFill = solRow[c] === true;
+      const isFilled = filledRow[c] === true;
+      if (isFilled && !shouldFill) extra.push({ r, c });
+      else if (!isFilled && shouldFill) missing.push({ r, c });
+    }
+  }
+  return { extra, missing };
+}
+
+/**
  * 單字是否可生成謎題：直接試跑 buildSolution，能成功即可玩。
  * 以 buildSolution 為單一事實來源（空字串、含 Q 或其他未收錄字元都會丟錯 → false），
  * 避免「哪些字合法」的規則散成兩份而漂移（見 font.js「刻意不收錄 Q」）。
