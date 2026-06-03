@@ -50,7 +50,10 @@ const els = {
   rowClues: document.getElementById('row-clues'),
   grid: document.getElementById('grid'),
   answer: document.getElementById('answer'),
+  actions: document.getElementById('actions'),
   keyboard: document.getElementById('keyboard'),
+  kbDrawer: document.getElementById('kb-drawer'),
+  kbClose: document.getElementById('kb-close'),
   checkBtn: document.getElementById('check-btn'),
   revealBtn: document.getElementById('reveal-btn'),
   replayBtn: document.getElementById('replay-btn'),
@@ -78,6 +81,8 @@ let typed = '';
 // 揭曉狀態（過關或看答案）：一旦揭曉就鎖定塗色／打字，避免畫面與揭曉結果矛盾。
 // 「不計過關」由「看答案時不呼叫 markSolved」直接保證，無需額外旗標。
 let revealed = false;
+// 鍵盤抽屜是否展開（#4）：影響格盤可用高度，開合時需重算 fitGrid。
+let drawerOpen = false;
 
 // ---- 視圖切換（首頁／遊戲／全部過關，三選一）----
 function showView(name) {
@@ -91,6 +96,7 @@ function showHome() {
   currentIndex = -1;
   isCustom = false;
   setSettingsOpen(false); // 回首頁時設定浮層恢復收合
+  closeDrawer();          // 回首頁時收起鍵盤抽屜
   renderLibrary();
   showView('home');
 }
@@ -158,6 +164,10 @@ function startPuzzle(word, label) {
   els.replayBtn.hidden = true;
   els.nextBtn.hidden = true;
   clearHint();
+  // 每題從「鍵盤收起」開始（fitGrid 在下方依此算出滿版格盤）。
+  drawerOpen = false;
+  els.kbDrawer.classList.remove('is-open');
+  document.body.style.paddingBottom = '';
   renderColClues();
   renderRowClues();
   renderGrid();
@@ -241,27 +251,59 @@ function renderGrid() {
   }
 }
 
-// 格盤填滿 layout 可用寬度：欄寬一律由 JS 算（CSS 不寫死），避免大塊留白／格子過小。
-// row-clues 寬度為內容驅動（提示位數），實測它再扣掉，避免硬編固定 px（見 PRD）。
+// 格盤動態縮放：取「寬度可塞」與「高度可塞」的較小格寬，讓整片格盤永遠完整可見、
+// 不被鍵盤抽屜遮蓋（#4）。提示帶尺寸一律實測（row-clues 寬、col-clues 高），
+// 不硬編固定 px，否則多位數提示會把格子夾到極小（見 PRD「格盤尺寸動態計算」）。
+// 改動 padding（抽屜開合）後以 requestAnimationFrame 重算，待版面落定再量。
 function fitGrid() {
   if (!solution) return;
   requestAnimationFrame(() => {
     if (!solution) return;
+    const gridBorder = 4; // .grid 上下左右各 2px
+
+    // 寬度約束：卡片內寬扣掉 row-clues（實測）後均分給各欄。
     const cs = getComputedStyle(els.game);
     const padX = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);
     const cardInner = els.game.clientWidth - padX;
     const rowCluesW = els.rowClues.offsetWidth;
-    const gridBorder = 4; // .grid 左右各 2px
-    const avail = cardInner - rowCluesW - gridBorder;
-    let cell = Math.floor(avail / solution.cols);
+    const cellByW = Math.floor((cardInner - rowCluesW - gridBorder) / solution.cols);
+
+    // 高度約束：視窗高 − 格盤上方（標題列等）− 格盤下方需保留可見的內容（答案/按鈕/提示）
+    //           −（抽屜展開時）抽屜高 − col-clues（實測）。這些量都與格寬無關，無循環依賴。
+    const boardTop = els.board.getBoundingClientRect().top;
+    const belowH = els.answer.offsetHeight + els.actions.offsetHeight + els.hint.offsetHeight + 56;
+    const drawerH = drawerOpen ? els.kbDrawer.offsetHeight : 0;
+    const colCluesH = els.colClues.offsetHeight;
+    const availH = window.innerHeight - boardTop - belowH - drawerH - 12;
+    const cellByH = Math.floor((availH - colCluesH - gridBorder) / solution.rows);
+
+    let cell = Math.min(cellByW, cellByH);
     cell = Math.max(14, Math.min(cell, 56)); // 下限好點、上限不過胖
     els.board.style.setProperty('--cell', `${cell}px`);
   });
 }
 
-// 視窗縮放／轉向時重算格寬（僅在遊戲畫面）。
+// ---- 鍵盤抽屜開合 ----
+// 開啟：滑出抽屜、撐開 body 底部留白（讓內容可上推/捲動不被蓋）、重算格盤縮小讓位。
+function openDrawer() {
+  if (revealed) return; // 揭曉後鍵盤已鎖定，不再叫出
+  drawerOpen = true;
+  els.kbDrawer.classList.add('is-open');
+  document.body.style.paddingBottom = `${els.kbDrawer.offsetHeight}px`;
+  fitGrid();
+}
+function closeDrawer() {
+  drawerOpen = false;
+  els.kbDrawer.classList.remove('is-open');
+  document.body.style.paddingBottom = '';
+  fitGrid();
+}
+
+// 視窗縮放／轉向時重算格寬（僅在遊戲畫面）；抽屜開著時一併校正底部留白（轉向後抽屜高會變）。
 window.addEventListener('resize', () => {
-  if (!els.game.hidden) fitGrid();
+  if (els.game.hidden) return;
+  if (drawerOpen) document.body.style.paddingBottom = `${els.kbDrawer.offsetHeight}px`;
+  fitGrid();
 });
 
 // ---- 按字母上色：依欄索引找出所屬字母序，回傳對應顏色 ----
@@ -310,6 +352,7 @@ function cellAtPoint(x, y) {
 
 els.grid.addEventListener('pointerdown', (e) => {
   if (revealed) return; // 過關／看答案後鎖定，避免改動格盤與揭曉狀態矛盾
+  if (drawerOpen) closeDrawer(); // 摸格子即收回鍵盤（US 10），同一觸控仍照常塗這格
   const cell = e.target.closest('.cell');
   if (!cell) return;
   e.preventDefault();
@@ -389,6 +432,10 @@ els.keyboard.addEventListener('click', (e) => {
   clearHint();
   renderAnswer();
 });
+
+// 點答案欄叫出鍵盤抽屜；抽屜內「收起」收回（摸格子收回見 grid pointerdown）。
+els.answer.addEventListener('click', openDrawer);
+els.kbClose.addEventListener('click', closeDrawer);
 
 // ---- 自訂出題（首頁）----
 // 用同一套螢幕鍵盤輸入 A–Z/0–9；空字串不出題；含 Q 給友善提示。
@@ -531,6 +578,7 @@ function revealBoard(withDiff) {
   });
 
   revealed = true;
+  closeDrawer();  // 揭曉後收起鍵盤，讓整片上色正解完整可見
   renderAnswer(); // 答案欄也按字母上色
 }
 
