@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#1b2a4a">
+  <title>數織解謎</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css?v=20260603b">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1 class="title">數織解謎</h1>
+      <p class="subtitle">看提示塗格子，猜出隱藏的單字！</p>
+    </header>
+
+    <main class="card">
+      <!-- 格盤：四宮格 = 角落 / 上方列提示 / 左側行提示 / 格盤本體 -->
+      <div id="board" class="board">
+        <div class="board-corner"></div>
+        <div id="col-clues" class="col-clues"></div>
+        <div id="row-clues" class="row-clues"></div>
+        <div id="grid" class="grid"></div>
+      </div>
+
+      <!-- 答案欄 -->
+      <div id="answer" class="answer" aria-label="答案欄"></div>
+
+      <!-- 螢幕鍵盤 -->
+      <div class="keyboard" id="keyboard"></div>
+
+      <div class="actions">
+        <button id="check-btn" class="btn btn--primary">檢查</button>
+      </div>
+
+      <p id="hint" class="hint">載入中⋯</p>
+    </main>
+  </div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
