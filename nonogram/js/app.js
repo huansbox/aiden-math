@@ -16,6 +16,7 @@ import {
   checkAnswer,
   diffCells,
   letterDividerCols,
+  validateWord,
 } from '../nonogram.js';
 import {
   parseWordlist,
@@ -31,6 +32,10 @@ const els = {
   game: document.getElementById('game'),
   allclear: document.getElementById('allclear'),
   library: document.getElementById('library'),
+  customDisplay: document.getElementById('custom-display'),
+  customKeyboard: document.getElementById('custom-keyboard'),
+  customHint: document.getElementById('custom-hint'),
+  customStartBtn: document.getElementById('custom-start-btn'),
   puzzleLabel: document.getElementById('puzzle-label'),
   homeBtn: document.getElementById('home-btn'),
   allclearHomeBtn: document.getElementById('allclear-home-btn'),
@@ -53,7 +58,8 @@ const LETTER_COLORS = ['#e8554e', '#f5a623', '#3fb55f', '#2b8fd6', '#9b59b6', '#
 // ---- 狀態 ----
 let words = [];        // 題庫單字（已過濾為可玩）
 let solvedKeys = loadProgress(localStorage);
-let currentIndex = -1; // 目前題目索引（-1 = 在首頁）
+let currentIndex = -1; // 目前題目索引（-1 = 在首頁或自訂題）
+let isCustom = false;   // 目前是否在玩自訂題（不記過關、無「下一題」題庫序）
 let currentWord = '';
 let solution = null;
 let clues = null;
@@ -73,6 +79,7 @@ function showView(name) {
 // ---- 首頁：編號題庫 ----
 function showHome() {
   currentIndex = -1;
+  isCustom = false;
   renderLibrary();
   showView('home');
 }
@@ -125,18 +132,16 @@ els.library.addEventListener('click', (e) => {
   loadPuzzle(Number(card.dataset.index));
 });
 
-// ---- 載入並開始一題 ----
-function loadPuzzle(index) {
-  if (index < 0 || index >= words.length) return;
-  currentIndex = index;
-  currentWord = words[index];
+// ---- 共用：以一個單字開始一局（題庫題與自訂題共用渲染流程）----
+function startPuzzle(word, label) {
+  currentWord = word;
   solution = buildSolution(currentWord);
   clues = computeClues(solution.cells);
   dividerCols = new Set(letterDividerCols(solution.letterRanges));
   typed = '';
   revealed = false;
 
-  els.puzzleLabel.textContent = `第 ${index + 1} 題`;
+  els.puzzleLabel.textContent = label;
   els.checkBtn.hidden = false;
   els.revealBtn.hidden = false;
   els.replayBtn.hidden = true;
@@ -149,6 +154,21 @@ function loadPuzzle(index) {
   fitGrid();
 
   showView('game');
+}
+
+// ---- 載入並開始題庫某題 ----
+function loadPuzzle(index) {
+  if (index < 0 || index >= words.length) return;
+  currentIndex = index;
+  isCustom = false;
+  startPuzzle(words[index], `第 ${index + 1} 題`);
+}
+
+// ---- 自訂題：臨時遊玩，不寫題庫、不記過關、無題庫「下一題」序 ----
+function loadCustomPuzzle(word) {
+  currentIndex = -1;
+  isCustom = true;
+  startPuzzle(word, '自訂題');
 }
 
 // ---- 格盤渲染（欄列數一律由 JS 設定，非 CSS 寫死）----
@@ -323,8 +343,10 @@ function renderAnswer() {
   }
 }
 
-function renderKeyboard() {
-  els.keyboard.innerHTML = '';
+// A–Z + 0–9 + 刪除鍵；自訂出題與遊戲答案欄共用同一套螢幕鍵盤（限這些字元，
+// 避免叫出系統鍵盤、也避免打進無法生成的字元，見 PRD US 11/23）。
+function renderKeyboard(container) {
+  container.innerHTML = '';
   const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
   const digits = '0123456789'.split('');
   [...letters, ...digits].forEach((ch) => {
@@ -332,13 +354,13 @@ function renderKeyboard() {
     btn.className = 'key';
     btn.textContent = ch;
     btn.dataset.key = ch;
-    els.keyboard.appendChild(btn);
+    container.appendChild(btn);
   });
   const del = document.createElement('button');
   del.className = 'key key--del';
   del.textContent = '⌫';
   del.dataset.key = 'DEL';
-  els.keyboard.appendChild(del);
+  container.appendChild(del);
 }
 
 els.keyboard.addEventListener('click', (e) => {
@@ -353,6 +375,66 @@ els.keyboard.addEventListener('click', (e) => {
   }
   clearHint();
   renderAnswer();
+});
+
+// ---- 自訂出題（首頁）----
+// 用同一套螢幕鍵盤輸入 A–Z/0–9；空字串不出題；含 Q 給友善提示。
+// 開始即玩，不寫題庫、不記過關（loadCustomPuzzle 負責 isCustom）。
+const MAX_CUSTOM_LEN = 8; // 字夠長即可玩；過長在窄螢幕會被夾到太小，故設上限
+let customTyped = '';
+
+function renderCustomDisplay() {
+  els.customDisplay.innerHTML = '';
+  if (customTyped.length === 0) {
+    const ph = document.createElement('span');
+    ph.className = 'custom-placeholder';
+    ph.textContent = '在這裡打字⋯';
+    els.customDisplay.appendChild(ph);
+    return;
+  }
+  for (const ch of customTyped) {
+    const chip = document.createElement('span');
+    chip.className = 'custom-chip';
+    chip.textContent = ch;
+    els.customDisplay.appendChild(chip);
+  }
+}
+
+// 依目前輸入更新顯示、提示與「開始玩」可用狀態（單一事實來源：validateWord）。
+function refreshCustomState() {
+  renderCustomDisplay();
+  const result = validateWord(customTyped);
+  els.customStartBtn.disabled = !result.ok;
+  if (result.ok || result.reason === 'empty') {
+    els.customHint.textContent = '';
+    els.customHint.classList.remove('bad');
+  } else {
+    els.customHint.textContent =
+      result.reason === 'has-q'
+        ? 'Q 這個字母還不支援喔，換一個吧！'
+        : '這個字沒辦法變成謎題，換一個吧！';
+    els.customHint.classList.add('bad');
+  }
+}
+
+els.customKeyboard.addEventListener('click', (e) => {
+  const btn = e.target.closest('.key');
+  if (!btn) return;
+  const key = btn.dataset.key;
+  if (key === 'DEL') {
+    customTyped = customTyped.slice(0, -1);
+  } else if (customTyped.length < MAX_CUSTOM_LEN) {
+    customTyped += key;
+  }
+  refreshCustomState();
+});
+
+els.customStartBtn.addEventListener('click', () => {
+  const result = validateWord(customTyped);
+  if (!result.ok) return; // 空字串／含 Q 時按鈕本就 disabled，這裡再保險擋一次
+  loadCustomPuzzle(result.word);
+  customTyped = '';       // 開始後清空，回到首頁時是乾淨狀態
+  refreshCustomState();
 });
 
 // ---- 檢查 ----
@@ -395,13 +477,16 @@ els.checkBtn.addEventListener('click', () => {
     els.hint.textContent = '🎉 答對了！過關！';
     els.hint.classList.remove('bad');
     els.hint.classList.add('ok');
-    solvedKeys = markSolved(solvedKeys, currentWord);
-    saveProgress(localStorage, solvedKeys);
+    // 自訂題為臨時遊玩：不寫題庫過關紀錄（見 PRD「自訂出題為臨時遊玩」）。
+    if (!isCustom) {
+      solvedKeys = markSolved(solvedKeys, currentWord);
+      saveProgress(localStorage, solvedKeys);
+    }
     revealBoard(true); // 過關：上色正解 + 標出多塗/漏塗
     els.checkBtn.hidden = true;
     els.revealBtn.hidden = true;
     els.replayBtn.hidden = false;
-    els.nextBtn.hidden = false;
+    els.nextBtn.hidden = isCustom; // 自訂題無題庫「下一題」序，僅留重玩／回題庫
   } else {
     els.hint.textContent = '再試試 💪';
     els.hint.classList.remove('ok');
@@ -417,13 +502,14 @@ els.revealBtn.addEventListener('click', () => {
   els.hint.classList.remove('ok', 'bad');
   els.checkBtn.hidden = true;
   els.revealBtn.hidden = true;
-  els.replayBtn.hidden = false; // 可重玩
-  els.nextBtn.hidden = false;    // 或下一題
+  els.replayBtn.hidden = false;  // 可重玩
+  els.nextBtn.hidden = isCustom; // 題庫題可下一題；自訂題無題庫序，僅重玩／回題庫
 });
 
 // ---- 重玩：重新載入同一題（清空塗色與答案）----
 els.replayBtn.addEventListener('click', () => {
-  if (currentIndex >= 0) loadPuzzle(currentIndex);
+  if (isCustom) loadCustomPuzzle(currentWord);
+  else if (currentIndex >= 0) loadPuzzle(currentIndex);
 });
 
 // ---- 下一題（跳到下一個未過關的題；全部過關才進全破畫面）----
@@ -447,7 +533,9 @@ els.allclearHomeBtn.addEventListener('click', showHome);
 
 // ---- 初始化：載入題庫 → 首頁 ----
 async function init() {
-  renderKeyboard();
+  renderKeyboard(els.keyboard);
+  renderKeyboard(els.customKeyboard);
+  refreshCustomState();
   // 先顯示首頁並標示載入中，避免 fetch 期間整頁空白。
   showView('home');
   showLibraryMessage('載入中⋯');

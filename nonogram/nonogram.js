@@ -141,3 +141,21 @@ export function isPlayable(word) {
     return false;
   }
 }
+
+/**
+ * 驗證自訂出題輸入，回傳 { ok, word? , reason? }。
+ * 螢幕鍵盤已限制只能輸入 A–Z/0–9，故實務上唯一會踩到的不可玩字元是 Q；
+ * 但仍把 reason 分成三類，讓 UI 能給對應訊息、且純邏輯可單元測試：
+ *   - 'empty'       空字串／全空白 → 不出題（不算錯，無需責備訊息）。
+ *   - 'has-q'       含 Q（刻意未收錄）→ 給友善提示「這個字母還不支援喔」。
+ *   - 'unsupported' 其他無法生成（標點等非鍵盤輸入）→ 一般性擋下。
+ * @param {string} word
+ * @returns {{ ok: true, word: string } | { ok: false, reason: 'empty'|'has-q'|'unsupported' }}
+ */
+export function validateWord(word) {
+  const normalized = String(word).trim().toUpperCase();
+  if (normalized.length === 0) return { ok: false, reason: 'empty' };
+  if (normalized.includes('Q')) return { ok: false, reason: 'has-q' };
+  if (!isPlayable(normalized)) return { ok: false, reason: 'unsupported' };
+  return { ok: true, word: normalized };
+}

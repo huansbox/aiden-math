@@ -6,6 +6,7 @@ import {
   diffCells,
   letterDividerCols,
   isPlayable,
+  validateWord,
   LETTER_ROWS,
 } from '../nonogram.js';
 import { FONT } from '../font.js';
@@ -264,5 +265,50 @@ describe('isPlayable', () => {
   it('空字串／標點回 false', () => {
     expect(isPlayable('')).toBe(false);
     expect(isPlayable('SO!TO')).toBe(false);
+  });
+});
+
+describe('validateWord（自訂出題的輸入閘）', () => {
+  it('可玩的字回 ok 並正規化（去空白、轉大寫）', () => {
+    expect(validateWord('  love  ')).toEqual({ ok: true, word: 'LOVE' });
+    expect(validateWord('520')).toEqual({ ok: true, word: '520' });
+  });
+
+  it('空字串／全空白回 reason: empty', () => {
+    expect(validateWord('')).toEqual({ ok: false, reason: 'empty' });
+    expect(validateWord('   ')).toEqual({ ok: false, reason: 'empty' });
+  });
+
+  it('含 Q 的字另給 reason: has-q（供友善提示，與其他不可玩字區分）', () => {
+    expect(validateWord('QUIZ')).toEqual({ ok: false, reason: 'has-q' });
+    expect(validateWord('iraq')).toEqual({ ok: false, reason: 'has-q' });
+  });
+
+  it('其他無法生成的字回 reason: unsupported', () => {
+    expect(validateWord('SO!TO')).toEqual({ ok: false, reason: 'unsupported' });
+  });
+});
+
+// 代表性單字（含數字題）的攤平與提示，作為自訂出題的回歸保護（#6 驗收）。
+describe('代表性單字 buildSolution / computeClues', () => {
+  it('數字題 520（皆 3 欄 → 9 欄）攤平與提示正確', () => {
+    const sol = buildSolution('520');
+    expect(sol.cols).toBe(9);
+    expect(sol.letterRanges).toEqual([
+      { char: '5', start: 0, width: 3 },
+      { char: '2', start: 3, width: 3 },
+      { char: '0', start: 6, width: 3 },
+    ]);
+    const { rows, cols } = computeClues(sol.cells);
+    // 第 0 列三個字模首列皆 "111" → 整列連塗 9 格
+    expect(rows[0]).toEqual([9]);
+    // 第 0 欄 = 5/2/0 各自首欄："1","1","1","0","1" → 連塗 3 + 1
+    expect(cols[0]).toEqual([3, 1]);
+  });
+
+  it('混合字寬單字 LOVE（L3 O3 V3 E3 → 12 欄）', () => {
+    const sol = buildSolution('LOVE');
+    expect(sol.cols).toBe(12);
+    expect(computeClues(sol.cells).cols).toHaveLength(12);
   });
 });

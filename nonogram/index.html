@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=20260603f">
+  <link rel="stylesheet" href="css/style.css?v=20260603g">
 </head>
 <body>
   <div class="container">
@@ -23,6 +23,16 @@
     <main id="home" class="card home" hidden>
       <h2 class="home-title">選一題開始玩</h2>
       <div id="library" class="library" aria-label="題庫"></div>
+
+      <!-- 自訂出題：打一個單字即時生成謎題（臨時遊玩、不進題庫、不記紀錄） -->
+      <section class="custom" aria-label="自訂出題">
+        <h3 class="custom-title">自己出一題 ✏️</h3>
+        <p class="custom-sub">打一個英文單字或數字，馬上變成謎題！</p>
+        <div id="custom-display" class="custom-display" aria-live="polite"></div>
+        <div id="custom-keyboard" class="keyboard keyboard--custom"></div>
+        <p id="custom-hint" class="custom-hint" aria-live="polite"></p>
+        <button id="custom-start-btn" class="btn btn--primary" disabled>開始玩</button>
+      </section>
     </main>
 
     <!-- 遊戲畫面 -->
