@@ -450,7 +450,10 @@ els.keyboard.addEventListener('click', (e) => {
 });
 
 // 點答案欄叫出鍵盤抽屜；抽屜內「收起」收回（摸格子收回見 grid pointerdown）。
-els.answer.addEventListener('click', openDrawer);
+// 用 pointerdown 而非 click：觸控時若 tap 有微小位移，瀏覽器可能把它當 pan 手勢而
+// 不合成 click（#answer 是 div、非原生可點元素），導致 iPad/觸控模擬下抽屜叫不出來。
+// pointerdown 於觸控落下必觸發、不受位移抑制，滑鼠按下也照樣觸發。
+els.answer.addEventListener('pointerdown', openDrawer);
 els.kbClose.addEventListener('click', closeDrawer);
 
 // ---- 自訂出題（首頁）----

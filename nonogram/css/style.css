@@ -367,6 +367,7 @@ html, body {
   gap: 8px;
   margin: 18px 0 12px;
   cursor: pointer; /* 點一下叫出鍵盤抽屜 */
+  touch-action: manipulation; /* 觸控當作 tap，不啟用雙擊縮放、避免被當成 pan 手勢 */
 }
 .slot {
   width: clamp(34px, 11vw, 52px);
