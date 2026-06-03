@@ -60,6 +60,8 @@ html, body {
 .col-clues {
   display: flex;
   align-items: flex-end;
+  /* 補回 .grid 的 2px 左框，讓提示與格欄對齊 */
+  border-left: 2px solid transparent;
 }
 .col-clue {
   width: var(--cell);
@@ -79,6 +81,8 @@ html, body {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
+  /* 補回 .grid 的 2px 上框，讓提示與格列對齊 */
+  border-top: 2px solid transparent;
 }
 .row-clue {
   height: var(--cell);
@@ -96,8 +100,7 @@ html, body {
 .grid {
   display: grid;
   /* grid-template-columns / rows 由 JS 動態設定（欄列數不可 CSS 寫死） */
-  border-top: 2px solid var(--divider);
-  border-left: 2px solid var(--divider);
+  border: 2px solid var(--divider);
 }
 
 .cell {
@@ -110,11 +113,9 @@ html, body {
 }
 .cell.filled { background: var(--cell-fill); }
 
-/* 每 3 欄較粗分隔線輔助字母邊界 */
-.cell--divider { border-right: 2px solid var(--divider); }
-.col-clue--divider { box-shadow: inset -2px 0 0 0 var(--divider); }
-/* 格盤最右緣補一條粗線收邊 */
-.grid { border-right: 2px solid var(--divider); border-bottom: 2px solid var(--divider); }
+/* 每 3 欄較粗分隔線輔助字母邊界（畫在字母邊界＝該欄左緣） */
+.cell--divider { border-left: 2px solid var(--divider); }
+.col-clue--divider { box-shadow: inset 2px 0 0 0 var(--divider); }
 
 /* ---- 答案欄 ---- */
 .answer {
