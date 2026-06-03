@@ -14,7 +14,7 @@ import {
   parseWordlist,
   isSolved,
   markSolved,
-  nextIndex,
+  nextUnsolvedIndex,
   loadProgress,
   saveProgress,
 } from '../library.js';
@@ -22,9 +22,11 @@ import {
 const els = {
   home: document.getElementById('home'),
   game: document.getElementById('game'),
+  allclear: document.getElementById('allclear'),
   library: document.getElementById('library'),
   puzzleLabel: document.getElementById('puzzle-label'),
   homeBtn: document.getElementById('home-btn'),
+  allclearHomeBtn: document.getElementById('allclear-home-btn'),
   colClues: document.getElementById('col-clues'),
   rowClues: document.getElementById('row-clues'),
   grid: document.getElementById('grid'),
@@ -46,12 +48,24 @@ let dividerCols = new Set();
 let typed = '';
 let solved = false;    // 本題是否已過關（過關後鎖定塗色/打字，避免畫面與「過關」訊息矛盾）
 
+// ---- 視圖切換（首頁／遊戲／全部過關，三選一）----
+function showView(name) {
+  els.home.hidden = name !== 'home';
+  els.game.hidden = name !== 'game';
+  els.allclear.hidden = name !== 'allclear';
+}
+
 // ---- 首頁：編號題庫 ----
 function showHome() {
   currentIndex = -1;
   renderLibrary();
-  els.game.hidden = true;
-  els.home.hidden = false;
+  showView('home');
+}
+
+// ---- 全部過關畫面 ----
+function showAllClear() {
+  currentIndex = -1;
+  showView('allclear');
 }
 
 // 在題庫區放一行訊息（載入中／載入失敗）。
@@ -116,8 +130,7 @@ function loadPuzzle(index) {
   renderGrid();
   renderAnswer();
 
-  els.home.hidden = true;
-  els.game.hidden = false;
+  showView('game');
 }
 
 // ---- 格盤渲染（欄列數一律由 JS 設定，非 CSS 寫死）----
@@ -257,24 +270,24 @@ els.checkBtn.addEventListener('click', () => {
   }
 });
 
-// ---- 下一題（題庫順序，最後一題折返第一題）----
+// ---- 下一題（跳到下一個未過關的題；全部過關則進全破畫面）----
 els.nextBtn.addEventListener('click', () => {
-  const next = nextIndex(currentIndex, words.length);
+  const next = nextUnsolvedIndex(solvedKeys, words, currentIndex);
   if (next === null) {
-    showHome();
+    showAllClear();
   } else {
     loadPuzzle(next);
   }
 });
 
 els.homeBtn.addEventListener('click', showHome);
+els.allclearHomeBtn.addEventListener('click', showHome);
 
 // ---- 初始化：載入題庫 → 首頁 ----
 async function init() {
   renderKeyboard();
   // 先顯示首頁並標示載入中，避免 fetch 期間整頁空白。
-  els.game.hidden = true;
-  els.home.hidden = false;
+  showView('home');
   showLibraryMessage('載入中⋯');
   try {
     const res = await fetch('wordlist.txt', { cache: 'no-store' });

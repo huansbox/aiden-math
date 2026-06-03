@@ -9,7 +9,7 @@ import {
   builtinKey,
   isSolved,
   markSolved,
-  nextIndex,
+  nextUnsolvedIndex,
   loadProgress,
   saveProgress,
 } from '../library.js';
@@ -134,17 +134,38 @@ describe('loadProgress / saveProgress（注入 storage、可測試）', () => {
   });
 });
 
-describe('nextIndex', () => {
-  it('回傳題庫順序的下一題', () => {
-    expect(nextIndex(0, 6)).toBe(1);
-    expect(nextIndex(4, 6)).toBe(5);
+describe('nextUnsolvedIndex', () => {
+  const words = ['MOYA', 'SOTO', 'AIDEN', 'LEGO', 'EAGLE', 'TATIS'];
+
+  it('沒有任何過關時，回緊接的下一題', () => {
+    expect(nextUnsolvedIndex([], words, 0)).toBe(1);
+    expect(nextUnsolvedIndex([], words, 4)).toBe(5);
   });
 
-  it('最後一題折返第一題', () => {
-    expect(nextIndex(5, 6)).toBe(0);
+  it('跳過已過關的題，停在下一個未過關（環狀）', () => {
+    // SOTO(1)、LEGO(3) 已過關；從 0 出發應跳過 1 落在 2
+    const solved = markSolved(markSolved([], 'SOTO'), 'LEGO');
+    expect(nextUnsolvedIndex(solved, words, 0)).toBe(2);
+    // 從 2 出發：3 已過關 → 落在 4
+    expect(nextUnsolvedIndex(solved, words, 2)).toBe(4);
+    // 從 5 出發環狀回頭：0 未過關 → 落在 0
+    expect(nextUnsolvedIndex(solved, words, 5)).toBe(0);
+  });
+
+  it('使用者範例：只剩 2、4 未過關，從 0 出發跳到 2（索引 1）', () => {
+    // 「第 2、4 題」= 索引 1、3 未過關，其餘已過關
+    const solved = ['MOYA', 'AIDEN', 'EAGLE', 'TATIS'].reduce(markSolved, []);
+    expect(nextUnsolvedIndex(solved, words, 0)).toBe(1);
+    expect(nextUnsolvedIndex(solved, words, 1)).toBe(3);
+    expect(nextUnsolvedIndex(solved, words, 3)).toBe(1); // 環狀回到 1
+  });
+
+  it('全部過關回 null（進入「全部過關」畫面）', () => {
+    const allSolved = words.reduce(markSolved, []);
+    expect(nextUnsolvedIndex(allSolved, words, 2)).toBe(null);
   });
 
   it('空題庫回 null', () => {
-    expect(nextIndex(0, 0)).toBe(null);
+    expect(nextUnsolvedIndex([], [], 0)).toBe(null);
   });
 });

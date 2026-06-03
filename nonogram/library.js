@@ -60,14 +60,21 @@ export function markSolved(solvedKeys, word) {
 }
 
 /**
- * 題庫順序的下一題索引；最後一題折返第一題；空題庫回 null。
+ * 從 current 往後（環狀）找第一個「還沒過關」的題目索引；
+ * 全部都過關（或空題庫）時回 null，代表可進入「全部過關」畫面。
+ * 注意：從 current+1 起算，不會回 current 本身（「下一題」語意＝換一題）。
+ * @param {string[]} solvedKeys 已過關 key 陣列
+ * @param {string[]} words 題庫單字
  * @param {number} current 目前題目索引
- * @param {number} total 題庫題數
  * @returns {number|null}
  */
-export function nextIndex(current, total) {
-  if (total <= 0) return null;
-  return (current + 1) % total;
+export function nextUnsolvedIndex(solvedKeys, words, current) {
+  const total = words.length;
+  for (let step = 1; step <= total; step++) {
+    const i = (current + step) % total;
+    if (!isSolved(solvedKeys, words[i])) return i;
+  }
+  return null;
 }
 
 /**

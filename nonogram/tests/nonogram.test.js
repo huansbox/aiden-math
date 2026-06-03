@@ -30,6 +30,14 @@ describe('buildSolution', () => {
     ]);
   });
 
+  it('G 為 4 欄字模（辨識度調整：3→4 欄）', () => {
+    const sol = buildSolution('G');
+    expect(sol.cols).toBe(4);
+    expect(sol.letterRanges).toEqual([{ char: 'G', start: 0, width: 4 }]);
+    // LEGO：L=3 E=3 G=4 O=3 → 13
+    expect(buildSolution('LEGO').cols).toBe(13);
+  });
+
   it('混合字寬（5／3 欄）累加正確 — MOYA', () => {
     const sol = buildSolution('MOYA'); // M=5, O=3, Y=3, A=3 → 14
     expect(sol.cols).toBe(14);
