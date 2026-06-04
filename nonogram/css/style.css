@@ -298,6 +298,9 @@ html, body {
   justify-content: flex-end;
   gap: 5px;
   padding-right: 6px;
+  /* 多數字提示一律單行；換行會 overflow 固定行高、與相鄰列疊在一起（擠壓）。
+     單行使 row-clues 欄寬撐到內容寬，fitGrid 量到後縮小格盤讓出空間。 */
+  white-space: nowrap;
   font-size: var(--clue-font);
   font-weight: 700;
   color: var(--ink);
