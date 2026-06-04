@@ -366,6 +366,8 @@ html, body {
   justify-content: center;
   gap: 8px;
   margin: 18px 0 12px;
+  cursor: pointer; /* 點一下叫出鍵盤抽屜 */
+  touch-action: manipulation; /* 觸控當作 tap，不啟用雙擊縮放、避免被當成 pan 手勢 */
 }
 .slot {
   width: clamp(34px, 11vw, 52px);
@@ -416,6 +418,39 @@ html, body {
   background: #ffe2d2;
   min-width: clamp(48px, 14vw, 70px);
 }
+
+/* ---- 鍵盤抽屜（緊接遊戲卡片下方、in-flow；#4）---- */
+/* 收合時 max-height:0 不佔空間；展開時往下長出、緊貼卡片，空白自然落到鍵盤下方
+   （而非夾在卡片與鍵盤之間）。box-sizing:border-box 讓 padding 收進 max-height，收合得乾淨。 */
+.kb-drawer {
+  box-sizing: border-box;
+  overflow: hidden;
+  max-height: 0;
+  padding: 0 12px;            /* 收合時無垂直 padding → 真正 0 高、不留 sliver */
+  transition: max-height .24s ease, margin-top .24s ease;
+  background: var(--card);
+  border-radius: 18px;
+}
+.kb-drawer.is-open {
+  max-height: 70vh;
+  margin-top: 10px;
+  padding: 8px 12px 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .18);
+}
+.kb-drawer__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 2px 2px 6px;
+}
+.kb-drawer__tip {
+  font-size: clamp(13px, 3.6vw, 16px);
+  font-weight: 700;
+  color: var(--ink);
+  opacity: .8;
+}
+.kb-drawer .keyboard { margin-bottom: 0; }
 
 /* ---- 動作按鈕與提示 ---- */
 .actions { display: flex; justify-content: center; gap: 12px; }

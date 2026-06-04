@@ -50,7 +50,10 @@ const els = {
   rowClues: document.getElementById('row-clues'),
   grid: document.getElementById('grid'),
   answer: document.getElementById('answer'),
+  actions: document.getElementById('actions'),
   keyboard: document.getElementById('keyboard'),
+  kbDrawer: document.getElementById('kb-drawer'),
+  kbClose: document.getElementById('kb-close'),
   checkBtn: document.getElementById('check-btn'),
   revealBtn: document.getElementById('reveal-btn'),
   replayBtn: document.getElementById('replay-btn'),
@@ -78,6 +81,8 @@ let typed = '';
 // 揭曉狀態（過關或看答案）：一旦揭曉就鎖定塗色／打字，避免畫面與揭曉結果矛盾。
 // 「不計過關」由「看答案時不呼叫 markSolved」直接保證，無需額外旗標。
 let revealed = false;
+// 鍵盤抽屜是否展開（#4）：摸格子即收回（見 grid pointerdown）。
+let drawerOpen = false;
 
 // ---- 視圖切換（首頁／遊戲／全部過關，三選一）----
 function showView(name) {
@@ -91,6 +96,7 @@ function showHome() {
   currentIndex = -1;
   isCustom = false;
   setSettingsOpen(false); // 回首頁時設定浮層恢復收合
+  closeDrawer();          // 回首頁時收起鍵盤抽屜
   renderLibrary();
   showView('home');
 }
@@ -158,6 +164,9 @@ function startPuzzle(word, label) {
   els.replayBtn.hidden = true;
   els.nextBtn.hidden = true;
   clearHint();
+  // 每題從「鍵盤收起」開始。
+  drawerOpen = false;
+  els.kbDrawer.classList.remove('is-open');
   renderColClues();
   renderRowClues();
   renderGrid();
@@ -241,22 +250,37 @@ function renderGrid() {
   }
 }
 
-// 格盤填滿 layout 可用寬度：欄寬一律由 JS 算（CSS 不寫死），避免大塊留白／格子過小。
-// row-clues 寬度為內容驅動（提示位數），實測它再扣掉，避免硬編固定 px（見 PRD）。
+// 格盤填滿卡片可用寬度：欄寬由 JS 算（CSS 不寫死），row-clues 寬度為內容驅動（提示位數），
+// 一律實測再扣掉，避免硬編固定 px 把多位數提示的格子夾到極小（見 PRD「格盤尺寸動態計算」）。
+// 鍵盤抽屜為卡片下方 in-flow 區塊，開合不影響格盤寬度，故格寬只取決於寬度。
 function fitGrid() {
   if (!solution) return;
   requestAnimationFrame(() => {
     if (!solution) return;
+    const gridBorder = 4; // .grid 左右各 2px
     const cs = getComputedStyle(els.game);
     const padX = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);
     const cardInner = els.game.clientWidth - padX;
     const rowCluesW = els.rowClues.offsetWidth;
-    const gridBorder = 4; // .grid 左右各 2px
-    const avail = cardInner - rowCluesW - gridBorder;
-    let cell = Math.floor(avail / solution.cols);
+    let cell = Math.floor((cardInner - rowCluesW - gridBorder) / solution.cols);
     cell = Math.max(14, Math.min(cell, 56)); // 下限好點、上限不過胖
     els.board.style.setProperty('--cell', `${cell}px`);
   });
+}
+
+// ---- 鍵盤抽屜開合 ----
+// 抽屜是「緊接遊戲卡片下方」的 in-flow 區塊（CSS .kb-drawer 用 max-height 滑開），
+// 開啟時往下長出、貼著卡片，內容不被遮蓋、卡片與鍵盤間無死空白（空白落在鍵盤下方）。
+function openDrawer() {
+  if (revealed) return; // 揭曉後鍵盤已鎖定，不再叫出
+  drawerOpen = true;
+  els.kbDrawer.classList.add('is-open');
+  // 矮螢幕下鍵盤可能在摺線下，捲到可見（已展開的高度，故延後到 transition 後）。
+  setTimeout(() => els.kbDrawer.scrollIntoView({ behavior: 'smooth', block: 'end' }), 260);
+}
+function closeDrawer() {
+  drawerOpen = false;
+  els.kbDrawer.classList.remove('is-open');
 }
 
 // 視窗縮放／轉向時重算格寬（僅在遊戲畫面）。
@@ -313,6 +337,8 @@ els.grid.addEventListener('pointerdown', (e) => {
   const cell = e.target.closest('.cell');
   if (!cell) return;
   e.preventDefault();
+  // 摸格子即收回鍵盤（US 10）。鍵盤在格盤下方收合、不會動到格盤，故同一觸控仍照常塗這格。
+  if (drawerOpen) closeDrawer();
   painting = true;
   paintMode = !cell.classList.contains('filled'); // 第一格決定塗/擦，整段沿用
   paintCell(cell);
@@ -389,6 +415,13 @@ els.keyboard.addEventListener('click', (e) => {
   clearHint();
   renderAnswer();
 });
+
+// 點答案欄叫出鍵盤抽屜；抽屜內「收起」收回（摸格子收回見 grid pointerdown）。
+// 用 pointerdown 而非 click：觸控時若 tap 有微小位移，瀏覽器可能把它當 pan 手勢而
+// 不合成 click（#answer 是 div、非原生可點元素），導致 iPad/觸控模擬下抽屜叫不出來。
+// pointerdown 於觸控落下必觸發、不受位移抑制，滑鼠按下也照樣觸發。
+els.answer.addEventListener('pointerdown', openDrawer);
+els.kbClose.addEventListener('click', closeDrawer);
 
 // ---- 自訂出題（首頁）----
 // 用同一套螢幕鍵盤輸入 A–Z/0–9；空字串不出題；含 Q 給友善提示。
@@ -531,6 +564,7 @@ function revealBoard(withDiff) {
   });
 
   revealed = true;
+  closeDrawer();  // 揭曉後收起鍵盤，讓整片上色正解完整可見
   renderAnswer(); // 答案欄也按字母上色
 }
 

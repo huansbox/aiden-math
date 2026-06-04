@@ -22,7 +22,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=20260603i">
+  <link rel="stylesheet" href="css/style.css?v=20260604e">
 </head>
 <body>
   <div class="container">
@@ -81,13 +81,11 @@
         <div id="grid" class="grid"></div>
       </div>
 
-      <!-- 答案欄 -->
-      <div id="answer" class="answer" aria-label="答案欄"></div>
+      <!-- 答案欄（點一下展開下方鍵盤抽屜）-->
+      <div id="answer" class="answer" role="button" tabindex="0"
+           aria-label="答案欄，點一下打字"></div>
 
-      <!-- 螢幕鍵盤 -->
-      <div class="keyboard" id="keyboard"></div>
-
-      <div class="actions">
+      <div id="actions" class="actions">
         <button id="check-btn" class="btn btn--primary">檢查</button>
         <button id="reveal-btn" class="btn btn--ghost">看答案</button>
         <button id="replay-btn" class="btn btn--ghost" hidden>重玩</button>
@@ -96,6 +94,15 @@
 
       <p id="hint" class="hint"></p>
     </main>
+
+    <!-- 螢幕鍵盤抽屜（緊接遊戲卡片下方、in-flow；點答案欄展開、收起時收合）-->
+    <div id="kb-drawer" class="kb-drawer">
+      <div class="kb-drawer__bar">
+        <span class="kb-drawer__tip">用鍵盤打出你猜的單字</span>
+        <button id="kb-close" class="btn btn--ghost">收起</button>
+      </div>
+      <div class="keyboard" id="keyboard"></div>
+    </div>
 
     <!-- 全部過關畫面 -->
     <main id="allclear" class="card allclear" hidden>
@@ -106,6 +113,6 @@
     </main>
   </div>
 
-  <script type="module" src="js/app.js"></script>
+  <script type="module" src="js/app.js?v=20260604e"></script>
 </body>
 </html>
