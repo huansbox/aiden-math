@@ -1,6 +1,6 @@
 ---
 name: add-puzzle
-description: 新增（或移除）數織解謎（nonogram）題庫的題目。當使用者要加單字/題目到 wordlist、擴充或調整數織題庫、或問「怎麼新增題目」時使用。涵蓋 wordlist 編輯、字模限制（避開 Q、長度）、同步更新 library.test.js 的預期清單、跑測試與部署。
+description: 新增（或移除）數織解謎（nonogram）題庫的題目。當使用者要加單字/題目到 wordlist、擴充或調整數織題庫、或問「怎麼新增題目」時使用。涵蓋 wordlist 編輯、字模限制（避開 Q、格盤寬度上限）、同步更新 library.test.js 的預期清單、跑測試與部署。
 ---
 
 # 新增數織題目（add-puzzle）
@@ -9,11 +9,11 @@ description: 新增（或移除）數織解謎（nonogram）題庫的題目。�
 
 ## 流程
 
-1. **編輯 `wordlist.txt`**：在新的一行加入單字（4–5 字母佳）。先確認只用支援字元（見下方限制）。
+1. **編輯 `wordlist.txt`**：在新的一行加入單字。先確認字元與格盤寬度都在限制內（見下方限制）。
 
 2. **同步更新測試 `tests/library.test.js`（最容易漏！）**
    - 該檔的「#5 驗收」測試硬編了目前題庫清單：`expect(parseWordlist(wordlistText)).toEqual([ ... ])`。把新字**按 wordlist 的順序**加進那個陣列，否則測試會紅。
-   - 另一個「`buildSolution` 都不丟錯」的測試會自動涵蓋新字，不用改。
+   - 另兩個測試（`buildSolution` 不丟錯、格盤欄數 ≤ 18 護欄）會自動涵蓋新字、不用改；但**新字若超過 18 欄會紅燈**——那是「太寬該換字」的訊號，別去調高閾值（理由見下方限制）。
 
 3. **跑測試**（測試與 `package.json` 在 repo 根目錄，不在 `nonogram/`）：
    ```bash
@@ -32,7 +32,11 @@ description: 新增（或移除）數織解謎（nonogram）題庫的題目。�
 ## 限制（來自字模 `font.js`）
 
 - **只能用 A–Z（不含 Q）+ 0–9**，共 35 字模。含 **Q** 或標點的字會被 `parseWordlist` **靜默濾掉**（不報錯、但那題不會出現；步驟 2 的預期清單也不該放它）。
-- **長度建議 4–5 字母**：字越長格盤越寬（比例字寬：多數 3 欄，`G J K N P R` 4 欄，`M W` 5 欄），窄螢幕格子會縮到 14px 下限，6 字以上手機偏擠。
+- **格盤寬度上限 18 欄（`library.test.js` 有測試護欄自動擋）**：真正決定寬度的是**總欄數**（各字模欄寬累加），不是字母數——`MWW` 才 3 字母卻 15 欄。欄寬：多數字母與數字 3 欄、`G J K N P R` 4 欄、`M W` 5 欄。要精確知道某字幾欄，在 repo 根跑：
+  ```bash
+  node --input-type=module -e "import {buildSolution} from './nonogram/nonogram.js'; console.log(buildSolution('YOURWORD').cols)"
+  ```
+  閾值 18 = 現有最寬 `AIDEN`/`EAGLE`(16) + 2 欄緩衝；再寬手機格子會頂 14px 下限、偏擠。4–5 字母多半落在範圍內，但別拿字母數當準——超標跑測試自然紅燈。
 - 加完用瀏覽器掃一眼新題（repo 根跑 `npm run dev` → 開 `…/nonogram/`）：字模在小尺寸下的辨識度靠人眼，特別看相鄰字母會不會糊。
 
 ## Gotchas

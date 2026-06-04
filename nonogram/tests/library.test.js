@@ -68,6 +68,17 @@ describe('wordlist.txt 全部單字皆可玩（#5 驗收）', () => {
     expect(words.length).toBeGreaterThan(0);
     words.forEach((word) => expect(() => buildSolution(word)).not.toThrow());
   });
+
+  // 格盤寬度護欄：決定寬度的是「總欄數」（各字模欄寬累加，見 font.js），不是「字母數」
+  // ——MWW 3 字母卻 15 欄。閾值 18 = 現有最寬 AIDEN/EAGLE(16) + 2 欄緩衝；再寬手機格子
+  // 會頂 14px 下限、偏擠。加字超標就在此紅燈（精確擋下，取代 skill 舊有的「4–5 字母」粗估）。
+  it('每個單字的格盤欄數不超過 18（窄螢幕寬度護欄）', () => {
+    const MAX_COLS = 18;
+    const tooWide = parseWordlist(wordlistText)
+      .map((word) => ({ word, cols: buildSolution(word).cols }))
+      .filter(({ cols }) => cols > MAX_COLS);
+    expect(tooWide).toEqual([]);
+  });
 });
 
 describe('過關紀錄（builtin 命名空間、以單字為 key）', () => {
