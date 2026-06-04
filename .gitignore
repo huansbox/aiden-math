@@ -1,3 +1,9 @@
 node_modules/
-.claude/
 .plans/
+
+# Claude 設定：本機設定不進 repo，但子專案的「shared skills」要隨 repo 走（可跨機器共用）。
+# 例外規則需逐層放行（git 無法在被忽略的父目錄下直接 re-include）。
+.claude/
+!nonogram/.claude/
+nonogram/.claude/*
+!nonogram/.claude/skills/
