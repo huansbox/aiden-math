@@ -47,7 +47,7 @@ describe('parseWordlist', () => {
 });
 
 describe('wordlist.txt 全部單字皆可玩（#5 驗收）', () => {
-  it('解析出目前題庫的 6 題', () => {
+  it('解析出目前題庫的 11 題', () => {
     expect(parseWordlist(wordlistText)).toEqual([
       'MOYA',
       'SOTO',
@@ -55,6 +55,11 @@ describe('wordlist.txt 全部單字皆可玩（#5 驗收）', () => {
       'LEGO',
       'EAGLE',
       'TATIS',
+      'TYK',
+      'OUT',
+      'RUN',
+      'HIT',
+      '932',
     ]);
   });
 
