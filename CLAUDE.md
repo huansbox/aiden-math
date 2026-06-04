@@ -5,6 +5,7 @@
 這個 repo 統合「教小孩數學」的各類練習，目前含：
 
 - **根目錄**：長除法互動網站（部署到 GitHub Pages）
+- **`nonogram/`**：數織解謎互動網站（部署到 GitHub Pages 的 `/nonogram/`，見該目錄下的 CLAUDE.md）
 - **`worksheets/`**：可列印紙本練習（不部署，本地開啟列印）
   - `word-problems/` — 兩步驟應用題紙本練習（見該目錄下的 CLAUDE.md）
 
